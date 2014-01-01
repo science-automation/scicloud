@@ -73,8 +73,8 @@ def system_browser_may_be_graphical():
         return True
     return "DISPLAY" in os.environ
 
-class PiCloudHTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    """HTTP Server handler to retrieve email and token from PiCloud webserver
+class ScienceVMHTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+    """HTTP Server handler to retrieve email and token from Science VM webserver
     
     Webserver issues a 302 redirect to localhost
     Credentials are inside get parameters
@@ -118,7 +118,7 @@ def start_http_server():
         # create listener socket, bind it to the port, and start listening
         try:
             server_address = ('localhost', port)
-            httpd = BaseHTTPServer.HTTPServer(server_address, PiCloudHTTPHandler)
+            httpd = BaseHTTPServer.HTTPServer(server_address, ScienceVMHTTPHandler)
             # configure variables response handler writes to
             httpd.email = None
             httpd.auth_token = None            
@@ -197,7 +197,7 @@ def setup_machine(email=None, password=None, api_key=None):
             print '\n'
     
     if interactive_mode:
-        print 'Please enter your PiCloud account login information.\nIf you do not have an account, please create one at http://www.scivm.com\n' + \
+        print 'Please enter your Science VM account login information.\nIf you do not have an account, please create one at http://www.scivm.com\n' + \
         'Note that a password is required. If you have not set one, set one at https://www.scivm.com/accounts/settings/\n'
     
     try:
@@ -214,7 +214,7 @@ def setup_machine(email=None, password=None, api_key=None):
             if interactive_mode:                
                 keys = scicloud.account.list_keys(email, password, active_only=True)
                 
-                print """\nPiCloud uses API Keys, rather than your login information, to authenticate
+                print """\nScience VM uses API Keys, rather than your login information, to authenticate
     your machine. In the event your machine is compromised, you can deactivate
     your API Key to disable access. In this next step, you can choose to use
     an existing API Key for this machine, or create a new one. We recommend that

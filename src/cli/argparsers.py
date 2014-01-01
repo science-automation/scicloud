@@ -1,5 +1,5 @@
 """
-ArgumentParsers for processing input to the PiCloud CLI.
+ArgumentParsers for processing input to the Science VM CLI.
 """
 from __future__ import absolute_import
 """
@@ -75,7 +75,7 @@ def common_arg(*args, **kwargs):
 
 
 """Primary Parser"""
-scivm_parser = argparse.ArgumentParser(prog='scivm', description='PiCloud Command-Line Interface (CLI)')
+scivm_parser = argparse.ArgumentParser(prog='scivm', description='Science VM Command-Line Interface (CLI)')
 scivm_parser.add_argument('--version', dest='_version', action='store_true', help='Print version')
 scivm_parser.add_argument('-v', '--verbose', dest='_verbose', action='store_true', help='Increase amount of information you are given during command execution')
 scivm_parser.add_argument('-o', '--output', dest='_output', default='default', choices=['json', 'no-header', 'default'], help='Format of output')
@@ -84,15 +84,15 @@ scivm_parser.add_argument('-k', '--api-secretkey', dest='_api_secretkey', help='
 scivm_parser.add_argument('-s', '--simulate', dest='_simulate', action='store_true', help='Run command in simulator (see simulator documentation)')
 
 scivm_subparsers = scivm_parser.add_subparsers(title='subcommands',
-                                                   description='Subcommands and submodules of the PiCloud CLI. For detailed help, use "-h" after the subcommand/submodule. For example, for assistance with "exec", use "scivm exec -h".',
+                                                   description='Subcommands and submodules of the Science VM CLI. For detailed help, use "-h" after the subcommand/submodule. For example, for assistance with "exec", use "scivm exec -h".',
                                                    dest='_module',
                                                    )
 
 """Setup Parser"""
-setup_parser = scivm_subparsers.add_parser('setup', description='Sets up the current machine to use PiCloud.',
-                                             help='Set up the current machine to use PiCloud')
-setup_parser.add_argument('--email', '-e', help='Email used to login to your PiCloud account')
-setup_parser.add_argument('--password', '-p', help='Password used to login to your PiCloud account')
+setup_parser = scivm_subparsers.add_parser('setup', description='Sets up the current machine to use Science VM.',
+                                             help='Set up the current machine to use Science VM')
+setup_parser.add_argument('--email', '-e', help='Email used to login to your Science VM account')
+setup_parser.add_argument('--password', '-p', help='Password used to login to your Science VM account')
 setup_parser.add_argument('--api-key', '-a', nargs='?', default=False, help='API Key to use. If specified without a value, a new API Key will be created without prompting')
 
 """Execute Parser"""
@@ -120,21 +120,21 @@ common_args = [
     common_arg('--not-restartable', dest='restartable', action='store_false',
                help='Indicates that job cannot be safely restarted on a hardware failure'),
     common_arg('--priority', type=int,
-               help="Positive integer describing job's priority. PiCloud will try to run jobs with lower priorities earlier")
+               help="Positive integer describing job's priority. Science VM will try to run jobs with lower priorities earlier")
 
 ]               
 
-exec_parser = scivm_subparsers.add_parser('exec', description='Executes a program on PiCloud through the shell. This is the shell version of scicloud.call',
-                                            help="Execute a program on PiCloud through the shell")
+exec_parser = scivm_subparsers.add_parser('exec', description='Executes a program on Science VM through the shell. This is the shell version of scicloud.call',
+                                            help="Execute a program on Science VM through the shell")
 exec_parser.add_argument('command', nargs=argparse.PARSER, help='Templated shell command to execute')
 exec_parser.add_argument('-d', '--data', dest='args', metavar='PARAMETER=VALUE', action='append', 
                          help='Set template parameter to value')
 for args, kwargs in common_args:
     exec_parser.add_argument(*args, **kwargs)
 
-mapexec_parser = scivm_subparsers.add_parser('mapexec', description='Executes many programs in parallel on PiCloud through the shell. This is the shell version of scicloud.map. \
+mapexec_parser = scivm_subparsers.add_parser('mapexec', description='Executes many programs in parallel on Science VM through the shell. This is the shell version of scicloud.map. \
 Number of programs will be determined by number of comma-seperated arguments provided to -n (--maparg)',
-                                            help="Execute parallel programs on PiCloud through the shell")
+                                            help="Execute parallel programs on Science VM through the shell")
 mapexec_parser.add_argument('command', nargs=argparse.PARSER, help='Templated Shell command to execute.')
 mapexec_parser.add_argument('-d', '--data', dest='args', metavar='PARAMETER=VALUE', action='append', 
                          help='For every mapjob, set template parameter to value')
@@ -150,7 +150,7 @@ for args, kwargs in common_args:
     mapexec_parser.add_argument(*args, **kwargs)
 
 
-"""Additional PiCloud commands"""
+"""Additional Science VM commands"""
 
 
 
@@ -169,7 +169,7 @@ result_parser.add_argument('-i', '--ignore-errors', action='store_true', default
                            help='If job errored print Exception as return value and exit 0 rather than aborting with Exception')
 
 
-join_parser = scivm_subparsers.add_parser('join', description='Wait until job(s) running on PiCloud are complete.', 
+join_parser = scivm_subparsers.add_parser('join', description='Wait until job(s) running on Science VM are complete.', 
                                               parents=[jid_parser], help='Block until job(s) finished')
 join_parser.add_argument('-t', '--timeout', metavar='SECONDS', default=None, type=float,
                          help='Error if job has not finished by this number of seconds')
@@ -182,7 +182,7 @@ info_parser.add_argument('-o', '--output', dest='info_requested', default=None,
 kill_parser = scivm_subparsers.add_parser('kill', description='Abort running of job(s)',
                                             parents=[jid_parser], help='Kill job(s)')
 
-delete_parser = scivm_subparsers.add_parser('delete', description='Delete job(s) from PiCloud', 
+delete_parser = scivm_subparsers.add_parser('delete', description='Delete job(s) from Science VM', 
                                               parents=[jid_parser], help='Delete job(s)')
 
 ssh_parser = scivm_subparsers.add_parser('ssh', description='Wait until job is processing and ssh into the container of a job',
@@ -215,10 +215,10 @@ exec_shell_parser.add_argument('-m', '--max-runtime', type=int, help='Job will b
 
 
 """Rest Parser"""
-rest_parser = scivm_subparsers.add_parser('rest', description="Module for managing PiCloud REST interfaces", 
+rest_parser = scivm_subparsers.add_parser('rest', description="Module for managing Science VM REST interfaces", 
                                              help="Manage REST Interfaces")
 rest_subparsers = rest_parser.add_subparsers(title='commands', dest='_command', help='command help')
-rest_publish_parser = rest_subparsers.add_parser('publish', help='Publish a shell command to PiCloud which can be executed over REST')
+rest_publish_parser = rest_subparsers.add_parser('publish', help='Publish a shell command to Science VM which can be executed over REST')
 rest_publish_parser.add_argument('label', help='Label to assign the published function')
 rest_publish_parser.add_argument('command', nargs=argparse.PARSER, help='Templated shell command to execute')
 for args, kwargs in common_args:
@@ -227,17 +227,17 @@ for args, kwargs in common_args:
         continue
     rest_publish_parser.add_argument(*args, **kwargs)
 
-rest_list_parser = rest_subparsers.add_parser('list', help='List functions published to PiCloud')
+rest_list_parser = rest_subparsers.add_parser('list', help='List functions published to Science VM')
 
 rest_info_parser = rest_subparsers.add_parser('info', help='Retrieve information about a published function')
 rest_info_parser.add_argument('label', help='Label of published function to get info about')
 
-rest_invoke_parser = rest_subparsers.add_parser('invoke', help='Invoke a function published on PiCloud')
+rest_invoke_parser = rest_subparsers.add_parser('invoke', help='Invoke a function published on Science VM')
 rest_invoke_parser.add_argument('label', help='Label of function to invoke')
 rest_invoke_parser.add_argument('-d', '--data', dest='args', metavar='PARAMETER=VALUE', action='append', 
                          help='Set template parameter to value')
 
-rest_mapinvoke_parser = rest_subparsers.add_parser('mapinvoke', help='Invoke a function published on PiCloud many times')
+rest_mapinvoke_parser = rest_subparsers.add_parser('mapinvoke', help='Invoke a function published on Science VM many times')
 rest_mapinvoke_parser.add_argument('label', help='Label of function to invoke')
 rest_mapinvoke_parser.add_argument('-d', '--data', dest='args', metavar='PARAMETER=VALUE', action='append', 
                          help='For every mapjob, set template parameter to value')
@@ -245,55 +245,55 @@ rest_mapinvoke_parser.add_argument('-n', '--map-data', dest='mapargs', metavar='
                          help="Specify template parameter for each value. e.g. job1 parameter takes value1, job2 takes value2, etc.")
 
 
-rest_remove_parser = rest_subparsers.add_parser('remove', help='Remove a published function from PiCloud')
+rest_remove_parser = rest_subparsers.add_parser('remove', help='Remove a published function from Science VM')
 rest_remove_parser.add_argument('label', help='Label of published function to remove')
 
 
 """Files Parser"""
-files_parser = scivm_subparsers.add_parser('files', description="Module for managing files stored on PiCloud's key-value store (Deprecated: see scivm bucket)", 
+files_parser = scivm_subparsers.add_parser('files', description="Module for managing files stored on Science VM's key-value store (Deprecated: see scivm bucket)", 
                                              help="(Deprecated: see bucket) Manage files on key-value store")
 files_subparsers = files_parser.add_subparsers(title='commands', dest='_command', help='command help')
 
-files_delete_parser = files_subparsers.add_parser('delete', help='Delete a file stored on PiCloud')
-files_delete_parser.add_argument('name', default=None, help='Name of file stored on PiCloud')
+files_delete_parser = files_subparsers.add_parser('delete', help='Delete a file stored on Science VM')
+files_delete_parser.add_argument('name', default=None, help='Name of file stored on Science VM')
 
-files_get_parser = files_subparsers.add_parser('get', help='Retrieve a file from PiCloud')
+files_get_parser = files_subparsers.add_parser('get', help='Retrieve a file from Science VM')
 files_get_parser.add_argument('name', help='Name of file in storage')
 files_get_parser.add_argument('destination', type=shell_path_post_op, help='Local path to save file to')
 #files_get_parser.add_argument('--start-byte', help='Starting byte')
 #files_get_parser.add_argument('--end-byte', help='Ending byte')
 
-files_getmd5_parser = files_subparsers.add_parser('get-md5', help='Get the md5 checksum of a file stored on PiCloud')
-files_getmd5_parser.add_argument('name', default=None, help='Name of file stored on PiCloud')
+files_getmd5_parser = files_subparsers.add_parser('get-md5', help='Get the md5 checksum of a file stored on Science VM')
+files_getmd5_parser.add_argument('name', default=None, help='Name of file stored on Science VM')
 
-files_list_parser = files_subparsers.add_parser('list', help='List files in PiCloud Storage')
+files_list_parser = files_subparsers.add_parser('list', help='List files in Science VM Storage')
 
-files_put_parser = files_subparsers.add_parser('put', help='Store a file on PiCloud')
+files_put_parser = files_subparsers.add_parser('put', help='Store a file on Science VM')
 files_put_parser.add_argument('source', help='Local path to file')
-files_put_parser.add_argument('name', default=None, help='Name for file to be stored on PiCloud')
+files_put_parser.add_argument('name', default=None, help='Name for file to be stored on Science VM')
 
 files_syncfromscicloud_parser = files_subparsers.add_parser('sync-from-scicloud', help='Download file if it does not exist locally or has changed')
-files_syncfromscicloud_parser.add_argument('name', default=None, help='Name of file stored on PiCloud')
+files_syncfromscicloud_parser.add_argument('name', default=None, help='Name of file stored on Science VM')
 files_syncfromscicloud_parser.add_argument('destination', type=shell_path_post_op, help='Local path to save file to')
 
-files_synctoscicloud_parser = files_subparsers.add_parser('sync-to-scicloud', help='Upload file only if it does not exist on PiCloud or has changed')
+files_synctoscicloud_parser = files_subparsers.add_parser('sync-to-scicloud', help='Upload file only if it does not exist on Science VM or has changed')
 files_synctoscicloud_parser.add_argument('source', default=None, help='local path to file')
-files_synctoscicloud_parser.add_argument('name', default=None, help='Name for file to be stored on PiCloud')
+files_synctoscicloud_parser.add_argument('name', default=None, help='Name for file to be stored on Science VM')
 
 """Bucket Parser"""
-bucket_parser = scivm_subparsers.add_parser('bucket', description="Module for managing bucket objects stored on PiCloud's key-value store",
+bucket_parser = scivm_subparsers.add_parser('bucket', description="Module for managing bucket objects stored on Science VM's key-value store",
                                               help="Manage data objects in your bucket")
 bucket_subparsers = bucket_parser.add_subparsers(title='commands', dest='_command', help='command help')
 
-bucket_remove_parser = bucket_subparsers.add_parser('remove', help='Remove a bucket object from PiCloud')
+bucket_remove_parser = bucket_subparsers.add_parser('remove', help='Remove a bucket object from Science VM')
 bucket_remove_parser.add_argument('obj_paths', metavar='obj-path', default=None, help='Name of bucket object')
 bucket_remove_parser.add_argument('-p', '--prefix', default=None, type=str, help='If provided, prepend PREFIX/ to obj-path')
 
-bucket_remove_prefix_parser = bucket_subparsers.add_parser('remove-prefix', help='Remove list of bucket objects from PiCloud beginnign with prefix')
+bucket_remove_prefix_parser = bucket_subparsers.add_parser('remove-prefix', help='Remove list of bucket objects from Science VM beginnign with prefix')
 bucket_remove_prefix_parser.add_argument('prefix', default=None, help='Remove all objects beginning witht his prefix')
 
 
-bucket_get_parser = bucket_subparsers.add_parser('get', help='Retrieve a bucket object from PiCloud')
+bucket_get_parser = bucket_subparsers.add_parser('get', help='Retrieve a bucket object from Science VM')
 bucket_get_parser.add_argument('obj_path', metavar='obj-path', help='Name of bucket object')
 bucket_get_parser.add_argument('file_path', metavar='file-path', type=shell_path_post_op, help='Local path to save bucket object to')
 bucket_get_parser.add_argument('-p', '--prefix', default=None, type=str, help='If provided, prepend PREFIX/ to obj-path')
@@ -301,17 +301,17 @@ bucket_get_parser.add_argument('--start-byte', default=0, type=int, help='Starti
 bucket_get_parser.add_argument('--end-byte', default=None, type=int,help='Ending byte')
 
 
-bucket_getmd5_parser = bucket_subparsers.add_parser('get-md5', help='Get the md5 checksum of a bucket object stored on PiCloud')
+bucket_getmd5_parser = bucket_subparsers.add_parser('get-md5', help='Get the md5 checksum of a bucket object stored on Science VM')
 bucket_getmd5_parser.add_argument('obj_path', metavar='obj-path', default=None, help='Name of bucket object')
 bucket_getmd5_parser.add_argument('-p', '--prefix', default=None, type=str, help='If provided, prepend PREFIX/ to obj-path')
 
-bucket_iterlist_parser = bucket_subparsers.add_parser('iterlist', help='List bucket object keys stored on PiCloud (complete listing)')
+bucket_iterlist_parser = bucket_subparsers.add_parser('iterlist', help='List bucket object keys stored on Science VM (complete listing)')
 bucket_iterlist_parser.add_argument('-f', '--folderize', action="store_true", default=False,  
                                     help='Treat listing as directory based; compact keys containing "/" into a single folder')
 bucket_iterlist_parser.add_argument('-p', '--prefix', default=None, type=str, 
                                     help='Return only keys beginning with PREFIX. If folderize, list a folder by setting PREFIX to the folder')
 
-bucket_list_parser = bucket_subparsers.add_parser('list', help='List bucket object keys stored on PiCloud (result may be incomplete)')
+bucket_list_parser = bucket_subparsers.add_parser('list', help='List bucket object keys stored on Science VM (result may be incomplete)')
 bucket_list_parser.add_argument('-f', '--folderize', action="store_true", default=False,  
                                 help='Treat listing as directory based; compact keys containing "/" into a single folder')
 bucket_list_parser.add_argument('-p', '--prefix', default=None, type=str, 
@@ -326,9 +326,9 @@ bucket_info_parser.add_argument('obj_path', metavar='obj-path', default=None, he
 bucket_info_parser.add_argument('-p', '--prefix', default=None, type=str,
                                 help='If provided, prepend PREFIX/ to obj-path')
 
-bucket_put_parser = bucket_subparsers.add_parser('put', help='Store a bucket object on PiCloud')
+bucket_put_parser = bucket_subparsers.add_parser('put', help='Store a bucket object on Science VM')
 bucket_put_parser.add_argument('file_path', metavar='file-path', help='Local path to upload from')
-bucket_put_parser.add_argument('obj_path', metavar='obj-path', default=None, help='Key (name) of the bucket object to be stored on PiCloud')
+bucket_put_parser.add_argument('obj_path', metavar='obj-path', default=None, help='Key (name) of the bucket object to be stored on Science VM')
 bucket_put_parser.add_argument('-p', '--prefix', default=None, type=str,
                                help='If provided, prepend PREFIX/ to obj-path')
 
@@ -341,7 +341,7 @@ bucket_syncfromscicloud_parser.add_argument('-p', '--prefix', default=None, type
 
 bucket_synctoscicloud_parser = bucket_subparsers.add_parser('sync-to-scicloud', help='Upload bucket object only if it has changed')
 bucket_synctoscicloud_parser.add_argument('file_path', metavar='file-path', default=None, help='Local path to upload from')
-bucket_synctoscicloud_parser.add_argument('obj_path', metavar='obj-path', default=None, help='Name for bucket object to be stored on PiCloud')
+bucket_synctoscicloud_parser.add_argument('obj_path', metavar='obj-path', default=None, help='Name for bucket object to be stored on Science VM')
 bucket_synctoscicloud_parser.add_argument('-p', '--prefix', default=None, type=str,
                                        help='If provided, prepend PREFIX/ to obj-path')
 
@@ -367,7 +367,7 @@ bucket_is_public.add_argument('-p', '--prefix', default=None, type=str,
 
 bucket_public_url_folder = bucket_subparsers.add_parser('public-url-folder', help='Return HTTP path that begins all your public bucket URLs')
 
-bucket_mpsafe_get_parser = bucket_subparsers.add_parser('mpsafe-get', help='Atomically retrieve a bucket object from PiCloud. Use this in lieu of get/sync when multiple processes need to get a bucket')
+bucket_mpsafe_get_parser = bucket_subparsers.add_parser('mpsafe-get', help='Atomically retrieve a bucket object from Science VM. Use this in lieu of get/sync when multiple processes need to get a bucket')
 bucket_mpsafe_get_parser.add_argument('obj_path', metavar='obj-path', help='Name of bucket object')
 bucket_mpsafe_get_parser.add_argument('file_path', metavar='file-path', type=shell_path_post_op, help='Local path to save bucket object to')
 bucket_mpsafe_get_parser.add_argument('-p', '--prefix', default=None, type=str, help='If provided, prepend PREFIX/ to obj-path')
@@ -375,7 +375,7 @@ bucket_mpsafe_get_parser.add_argument('--start-byte', default=0, type=int, help=
 bucket_mpsafe_get_parser.add_argument('-t', '--timeout', metavar='SECONDS', default=None, type=float,
                            help="Error if timeout not acquired by by this number of seconds.")
 bucket_mpsafe_get_parser.add_argument('-s', '--sync', dest='do_sync', action='store_true',
-                               help='If set, obtain file if local is different from version on PiCloud; if not set, only obtain file it does not exist locally')
+                               help='If set, obtain file if local is different from version on Science VM; if not set, only obtain file it does not exist locally')
 
 
 """Realtime Parser"""
@@ -394,14 +394,14 @@ realtime_request_parser.add_argument('type', choices=['c1', 'c2', 'f2', 'm1', 's
 realtime_request_parser.add_argument('cores', type=int, help='The number of cores to reserve.')
 
 """ Volume Parser """
-volume_parser = scivm_subparsers.add_parser('volume', description='Module for managing volumes stored on PiCloud', help = "Manage volumes")
+volume_parser = scivm_subparsers.add_parser('volume', description='Module for managing volumes stored on Science VM', help = "Manage volumes")
 volume_subparsers = volume_parser.add_subparsers(title='commands', dest='_command', help='command help')
 
 volume_list_parser = volume_subparsers.add_parser('list', help='List existing volumes', description='Lists existing scicloud volumes')
 volume_list_parser.add_argument('-n', '--name', nargs='+', help='Name(s) of volume to list')
 volume_list_parser.add_argument('-d', '--desc', action='store_true', default=False, help='Print volume description')
 
-volume_create_parser = volume_subparsers.add_parser('create', help='Create a volume on PiCloud')
+volume_create_parser = volume_subparsers.add_parser('create', help='Create a volume on Science VM')
 volume_create_parser.add_argument('name', help='Name of the volume to create (max 64 chars)')
 volume_create_parser.add_argument('mount_path', metavar='mount-path', help='Mount point (is relative then relative to /home/scivm) where jobs should expect this volume.')
 volume_create_parser.add_argument('-d', '--desc', default=None, help='Description of the volume (max 1024 chars)')
@@ -410,7 +410,7 @@ volume_mkdir_parser = volume_subparsers.add_parser('mkdir', help='Create directo
 volume_mkdir_parser.add_argument('volume_path', metavar='volume-path', nargs='+', help='Cloud volume path where directory should be created')
 volume_mkdir_parser.add_argument('-p', '--parents', action='store_true', default=False, help='Make necessary parents')
 
-volume_sync_parser = volume_subparsers.add_parser('sync', help='Sync local directory to volume on PiCloud', description='Syncs a local path and a scicloud volume.', formatter_class=argparse.RawDescriptionHelpFormatter,)
+volume_sync_parser = volume_subparsers.add_parser('sync', help='Sync local directory to volume on Science VM', description='Syncs a local path and a scicloud volume.', formatter_class=argparse.RawDescriptionHelpFormatter,)
 volume_sync_parser.add_argument('source', nargs='+', help='Source path that should be synced')
 volume_sync_parser.add_argument('dest', help='Destination path that should be synced')
 volume_sync_parser.add_argument('-d', '--delete', action='store_true', help='Delete destination files that do not exist in source')
@@ -487,7 +487,7 @@ environment_run_script_parser.add_argument('filename', help='Local path to scrip
 """ Queue Parser """
 
 """
-queue_parser = scivm_subparsers.add_parser('queue', description="Module for managing PiCloud Queues", 
+queue_parser = scivm_subparsers.add_parser('queue', description="Module for managing Science VM Queues", 
                                              help="Manage queues")
 queue_parsers = queue_parser.add_subparsers(title='commands', dest='_command', help='command help')
 
@@ -509,10 +509,10 @@ queue_delete_parser.add_argument('name', help='Name of queue to delete')
 """
 
 """ Cron Parser """
-cron_parser = scivm_subparsers.add_parser('cron', description="Module for managing PiCloud Crons, periodically invoked functions on PiCloud", 
+cron_parser = scivm_subparsers.add_parser('cron', description="Module for managing Science VM Crons, periodically invoked functions on Science VM", 
                                              help="Manage periodically invoked functions")
 cron_parsers = cron_parser.add_subparsers(title='commands', dest='_command', help='command help')
-cron_register_parser = cron_parsers.add_parser('register', help='Register a function which will be periodically invoked on PiCloud according to a cron schedule')
+cron_register_parser = cron_parsers.add_parser('register', help='Register a function which will be periodically invoked on Science VM according to a cron schedule')
 cron_register_parser.add_argument('label', help='Label to assign the registered cron')
 cron_register_parser.add_argument('schedule', metavar='CRONTAB', help='Crontab schedule. See documentation for format details')
 cron_register_parser.add_argument('command', nargs=argparse.PARSER, help='Shell command to execute')
@@ -522,7 +522,7 @@ for args, kwargs in common_args:
         continue
     cron_register_parser.add_argument(*args, **kwargs)
 
-cron_list_parser = cron_parsers.add_parser('list', help='List crons registered on PiCloud')
+cron_list_parser = cron_parsers.add_parser('list', help='List crons registered on Science VM')
 cron_info_parser = cron_parsers.add_parser('info', help='Retrieve information about a registered cron')
 cron_info_parser.add_argument('label', help='Label of registered cron to get info about')
 

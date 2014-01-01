@@ -1,5 +1,5 @@
 """
-Functions wrap PiCloud calls
+Functions wrap Science VM calls
 
 """
 """
