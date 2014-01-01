@@ -179,7 +179,7 @@ def setup_machine(email=None, password=None, api_key=None):
     
     auth_token = None # authentication key derived from webserver injection
     
-    # connect to picloud
+    # connect to scivm
     cloud._getcloud().open()
     
     interactive_mode = not (email and password)
@@ -197,8 +197,8 @@ def setup_machine(email=None, password=None, api_key=None):
             print '\n'
     
     if interactive_mode:
-        print 'Please enter your PiCloud account login information.\nIf you do not have an account, please create one at http://www.picloud.com\n' + \
-        'Note that a password is required. If you have not set one, set one at https://www.picloud.com/accounts/settings/\n'
+        print 'Please enter your PiCloud account login information.\nIf you do not have an account, please create one at http://www.scivm.com\n' + \
+        'Note that a password is required. If you have not set one, set one at https://www.scivm.com/accounts/settings/\n'
     
     try:
         if email:            
@@ -253,7 +253,7 @@ def setup_machine(email=None, password=None, api_key=None):
         cloud.cloudconfig.flush_config()        
                 
         
-        # if user is running "picloud setup" with sudo, we need to chown
+        # if user is running "scivm setup" with sudo, we need to chown
         # the config file so that it's owned by user and not root.
         fix_sudo_path(os.path.join(cloud.cloudconfig.fullconfigpath,cloud.cloudconfig.configname))
         fix_sudo_path(cloud.cloudconfig.fullconfigpath)
@@ -273,10 +273,10 @@ def setup_machine(email=None, password=None, api_key=None):
             pass
         
     except EOFError:
-        sys.stderr.write('Got EOF. Please run "picloud setup" to complete installation.\n')
+        sys.stderr.write('Got EOF. Please run "scivm setup" to complete installation.\n')
         sys.exit(1)
     except KeyboardInterrupt:
-        sys.stderr.write('Got Keyboard Interrupt. Please run "picloud setup" to complete installation.\n')
+        sys.stderr.write('Got Keyboard Interrupt. Please run "scivm setup" to complete installation.\n')
         sys.exit(1)
     except cloud.CloudException, e:
         sys.stderr.write(str(e)+'\n')

@@ -26,7 +26,7 @@ Changes by Uche Ogbuji April 2003
     for correct character output
  *  switch from deprecated string module to string methods
  *  use PEP 8 style
- *  Further modifications by PiCloud
+ *  Further modifications by Science VM
 
 Please see Ogbuji's article for background: http://www.xml.com/pub/a/2003/04/09/py-xml.html
 Ogbuji has given permission to modify and release this code under LGPL

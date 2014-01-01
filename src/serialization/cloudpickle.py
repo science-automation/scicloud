@@ -119,7 +119,7 @@ class CloudPickler(pickle.Pickler):
         except RuntimeError, e:
             if 'recursion' in e.args[0]:
                 msg = """Could not pickle object as excessively deep recursion required.
-                Try _fast_serialization=2 or contact PiCloud support"""
+                Try _fast_serialization=2 or contact Science VM support"""
                 raise pickle.PicklingError(msg)
             raise
         finally:
@@ -606,7 +606,7 @@ class CloudPickler(pickle.Pickler):
     def save_reduce(self, func, args, state=None,
                     listitems=None, dictitems=None, obj=None):
         """Modified to support __transient__ on new objects
-        Change only affects protocol level 2 (which is always used by PiCloud"""        
+        Change only affects protocol level 2 (which is always used by Science VM"""        
         # Assert that args is a tuple or None
         if not isinstance(args, types.TupleType):
             raise pickle.PicklingError("args from reduce() should be a tuple")
@@ -677,7 +677,7 @@ class CloudPickler(pickle.Pickler):
     #python2.6+ supports xrange pickling. some py2.5 extensions might as well.  We just test it    
     try:
         xrange(0).__reduce__()
-    except TypeError: #can't pickle -- use PiCloud pickler    
+    except TypeError: #can't pickle -- use Science VM pickler    
         dispatch[xrange] = save_xrange
         
     def save_partial(self, obj):

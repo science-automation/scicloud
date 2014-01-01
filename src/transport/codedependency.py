@@ -290,7 +290,7 @@ class DependencyManager(modulefinder.ModuleFinder):
         self.modules[fqname] = m = modulefinder.Module(fqname, filename, path)
         cloudLog.debug('Dependent module %s found (relfile=%s, path=%s, filename=%s)', 
                        fqname, relfilename, path, filename)
-        #picloud: Timestamp module for update checks
+        #scivm: Timestamp module for update checks
         #Note: Must use 'reserved' names as modulefinder.import_module will setattr(parant, child_mod)
         # for instance, a submodule named _c__timestamp would blow away _c_timestamp
         m._c__timestamp = long(os.path.getmtime(filename))

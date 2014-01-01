@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """
-Entry Point for the PiCloud Command-Line Interface (CLI)
+Entry Point for the Science VM Command-Line Interface (CLI)
 """
 # since this module sits in the cloud package, we use absolute_import
 # so that we can easily import the top-level package, rather than the
@@ -57,7 +57,7 @@ def main(args=None):
     # special case: we want to provide the full help information
     # if the cli is run with no arguments
     if len(args) == 0:
-        argparsers.picloud_parser.print_help()
+        argparsers.scivm_parser.print_help()
         sys.exit(1)
     
     # special case: if --version is specified at all, print it out
@@ -67,7 +67,7 @@ def main(args=None):
         sys.exit(0)
         
     # parse_args is an object whose attributes are populated by the parsed args
-    parsed_args = argparsers.picloud_parser.parse_args(args)
+    parsed_args = argparsers.scivm_parser.parse_args(args)
     module_name = getattr(parsed_args, '_module', '')
     command_name = getattr(parsed_args, '_command', '')
     function_name = module_name + ('.%s' % command_name if command_name else '')

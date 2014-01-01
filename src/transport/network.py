@@ -93,12 +93,12 @@ class HttpConnection(CloudConnection):
                                            comment='secretkey. For backwards compatibility; replaced with credentials in 2.4',
                                            hidden = True)
     
-    __api_default_url = 'http://api.picloud.com/servers/list/'
+    __api_default_url = 'http://api.scivm.com/servers/list/'
     server_list_url = cc.account_configurable('server_list_url',
                                            default=__api_default_url,
                                            comment="url to list of PiCloud servers",hidden=False) 
     #hack for users utilizing old api
-    if server_list_url == 'http://www.picloud.com/pyapi/servers/list/':
+    if server_list_url == 'http://www.scivm.com/pyapi/servers/list/':
         server_list_url = __api_default_url
     
     job_cache_size = cc.transport_configurable('cloud_status_cache_size',
@@ -132,7 +132,7 @@ class HttpConnection(CloudConnection):
     status_accept = 200
     
     url = cc.account_configurable('url', default='',
-                                comment="url to picloud server.  Set by server_list_url if not found",hidden=True)
+                                comment="url to scivm server.  Set by server_list_url if not found",hidden=True)
     
     hostname = cc.transport_configurable('hostname',
                                   default='',
@@ -314,7 +314,7 @@ class HttpConnection(CloudConnection):
             if not api_secretkey: #fall back to secretkey in cloudconf (backwards compatibility)
                 api_secretkey = self.__class__.api_secretkey
             if not api_secretkey or api_secretkey == 'None':
-                raise CloudException('HttpConnection: api_secretkey for key %s not found. Please run picloud setup' % self.api_key)
+                raise CloudException('HttpConnection: api_secretkey for key %s not found. Please run scivm setup' % self.api_key)
         
         if not self.api_key_validated:
             #Download key if any components are missing
@@ -363,7 +363,7 @@ class HttpConnection(CloudConnection):
                     response = self.post(url, post_params, headers)
                 except urllib2.HTTPError, e:
                     # 4xx errors have our error_codes in their body
-                    # 520 is special "unexpected picloud server error code"
+                    # 520 is special "unexpected scivm server error code"
                     
                     if 400 <= e.code < 500 or e.code == 520:  
                         response = e
@@ -484,7 +484,7 @@ class HttpConnection(CloudConnection):
         """  
         
         if not auth and self.api_key == 'None':
-            raise CloudException('HttpConnection.query: api_key is not set. Please run "picloud setup" or call cloud.setkey()', logger=cloudLog)
+            raise CloudException('HttpConnection.query: api_key is not set. Please run "scivm setup" or call cloud.setkey()', logger=cloudLog)
                 
         headers = {}
         
@@ -844,7 +844,7 @@ class HttpConnection(CloudConnection):
         return mods
     
     def modules_add(self, modules, modules_tarball):
-        """modules_add adds the specified modules to the picloud system.
+        """modules_add adds the specified modules to the scivm system.
         modules is a list of tuples, where each tuple is (name, timestamp).
         modules_tarball is a string representing the tarball of all the included modules."""
         

@@ -3,7 +3,7 @@ ArgumentParsers for processing input to the PiCloud CLI.
 """
 from __future__ import absolute_import
 """
-Copyright (c) 2011 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
+Copyright (c) 2011 `PiCloud, Inc. <http://www.scivm.com>`_.  All rights reserved.
 
 email: contact@picloud.com
 
@@ -75,21 +75,21 @@ def common_arg(*args, **kwargs):
 
 
 """Primary Parser"""
-picloud_parser = argparse.ArgumentParser(prog='picloud', description='PiCloud Command-Line Interface (CLI)')
-picloud_parser.add_argument('--version', dest='_version', action='store_true', help='Print version')
-picloud_parser.add_argument('-v', '--verbose', dest='_verbose', action='store_true', help='Increase amount of information you are given during command execution')
-picloud_parser.add_argument('-o', '--output', dest='_output', default='default', choices=['json', 'no-header', 'default'], help='Format of output')
-picloud_parser.add_argument('-a', '--api-key', dest='_api_key', type=int, help='API key to use')
-picloud_parser.add_argument('-k', '--api-secretkey', dest='_api_secretkey', help='API secret key that matches the API key')
-picloud_parser.add_argument('-s', '--simulate', dest='_simulate', action='store_true', help='Run command in simulator (see simulator documentation)')
+scivm_parser = argparse.ArgumentParser(prog='scivm', description='PiCloud Command-Line Interface (CLI)')
+scivm_parser.add_argument('--version', dest='_version', action='store_true', help='Print version')
+scivm_parser.add_argument('-v', '--verbose', dest='_verbose', action='store_true', help='Increase amount of information you are given during command execution')
+scivm_parser.add_argument('-o', '--output', dest='_output', default='default', choices=['json', 'no-header', 'default'], help='Format of output')
+scivm_parser.add_argument('-a', '--api-key', dest='_api_key', type=int, help='API key to use')
+scivm_parser.add_argument('-k', '--api-secretkey', dest='_api_secretkey', help='API secret key that matches the API key')
+scivm_parser.add_argument('-s', '--simulate', dest='_simulate', action='store_true', help='Run command in simulator (see simulator documentation)')
 
-picloud_subparsers = picloud_parser.add_subparsers(title='subcommands',
-                                                   description='Subcommands and submodules of the PiCloud CLI. For detailed help, use "-h" after the subcommand/submodule. For example, for assistance with "exec", use "picloud exec -h".',
+scivm_subparsers = scivm_parser.add_subparsers(title='subcommands',
+                                                   description='Subcommands and submodules of the PiCloud CLI. For detailed help, use "-h" after the subcommand/submodule. For example, for assistance with "exec", use "scivm exec -h".',
                                                    dest='_module',
                                                    )
 
 """Setup Parser"""
-setup_parser = picloud_subparsers.add_parser('setup', description='Sets up the current machine to use PiCloud.',
+setup_parser = scivm_subparsers.add_parser('setup', description='Sets up the current machine to use PiCloud.',
                                              help='Set up the current machine to use PiCloud')
 setup_parser.add_argument('--email', '-e', help='Email used to login to your PiCloud account')
 setup_parser.add_argument('--password', '-p', help='Password used to login to your PiCloud account')
@@ -124,7 +124,7 @@ common_args = [
 
 ]               
 
-exec_parser = picloud_subparsers.add_parser('exec', description='Executes a program on PiCloud through the shell. This is the shell version of cloud.call',
+exec_parser = scivm_subparsers.add_parser('exec', description='Executes a program on PiCloud through the shell. This is the shell version of cloud.call',
                                             help="Execute a program on PiCloud through the shell")
 exec_parser.add_argument('command', nargs=argparse.PARSER, help='Templated shell command to execute')
 exec_parser.add_argument('-d', '--data', dest='args', metavar='PARAMETER=VALUE', action='append', 
@@ -132,7 +132,7 @@ exec_parser.add_argument('-d', '--data', dest='args', metavar='PARAMETER=VALUE',
 for args, kwargs in common_args:
     exec_parser.add_argument(*args, **kwargs)
 
-mapexec_parser = picloud_subparsers.add_parser('mapexec', description='Executes many programs in parallel on PiCloud through the shell. This is the shell version of cloud.map. \
+mapexec_parser = scivm_subparsers.add_parser('mapexec', description='Executes many programs in parallel on PiCloud through the shell. This is the shell version of cloud.map. \
 Number of programs will be determined by number of comma-seperated arguments provided to -n (--maparg)',
                                             help="Execute parallel programs on PiCloud through the shell")
 mapexec_parser.add_argument('command', nargs=argparse.PARSER, help='Templated Shell command to execute.')
@@ -158,10 +158,10 @@ for args, kwargs in common_args:
 jid_parser = argparse.ArgumentParser(add_help=False)
 jid_parser.add_argument('jids', help=jid_help_str) 
 
-status_parser = picloud_subparsers.add_parser('status', description='Obtain status of job(s)', 
+status_parser = scivm_subparsers.add_parser('status', description='Obtain status of job(s)', 
                                               parents=[jid_parser], help='Status of job(s)')
 
-result_parser = picloud_subparsers.add_parser('result', description='Obtain result of job(s)', 
+result_parser = scivm_subparsers.add_parser('result', description='Obtain result of job(s)', 
                                               parents=[jid_parser], help='Result of job(s)')
 result_parser.add_argument('-t', '--timeout', metavar='SECONDS', default=None, type=float,
                            help='Error if job has not finished by this number of seconds')
@@ -169,23 +169,23 @@ result_parser.add_argument('-i', '--ignore-errors', action='store_true', default
                            help='If job errored print Exception as return value and exit 0 rather than aborting with Exception')
 
 
-join_parser = picloud_subparsers.add_parser('join', description='Wait until job(s) running on PiCloud are complete.', 
+join_parser = scivm_subparsers.add_parser('join', description='Wait until job(s) running on PiCloud are complete.', 
                                               parents=[jid_parser], help='Block until job(s) finished')
 join_parser.add_argument('-t', '--timeout', metavar='SECONDS', default=None, type=float,
                          help='Error if job has not finished by this number of seconds')
 
-info_parser = picloud_subparsers.add_parser('info', description='Obtain information about job(s)', 
+info_parser = scivm_subparsers.add_parser('info', description='Obtain information about job(s)', 
                                             parents=[jid_parser], help='Information about job(s)')
 info_parser.add_argument('-o', '--output', dest='info_requested', default=None, 
                          help='comma seperated list of info desired. See docs for full listing. e.g. status, runtime')
 
-kill_parser = picloud_subparsers.add_parser('kill', description='Abort running of job(s)',
+kill_parser = scivm_subparsers.add_parser('kill', description='Abort running of job(s)',
                                             parents=[jid_parser], help='Kill job(s)')
 
-delete_parser = picloud_subparsers.add_parser('delete', description='Delete job(s) from PiCloud', 
+delete_parser = scivm_subparsers.add_parser('delete', description='Delete job(s) from PiCloud', 
                                               parents=[jid_parser], help='Delete job(s)')
 
-ssh_parser = picloud_subparsers.add_parser('ssh', description='Wait until job is processing and ssh into the container of a job',
+ssh_parser = scivm_subparsers.add_parser('ssh', description='Wait until job is processing and ssh into the container of a job',
                                            help='SSH into a job')
 ssh_parser.add_argument('-t', '--timeout', metavar='SECONDS', default=None, type=float,
                         help="Error if ssh not ready by this number of seconds.")
@@ -193,14 +193,14 @@ ssh_parser.add_argument('jid', type=int, help="job identifier")
 ssh_parser.add_argument('cmd', nargs=argparse.REMAINDER, help='Optional command to run without opening interactive console (command should be usually be escaped with quotes)') 
 
 
-ssh_info_parser = picloud_subparsers.add_parser('ssh-info', description='Obtain IP Address, Port, and username info to connect to a job for ssh/scp/etc. Use picloud ssh to log in to a job',
+ssh_info_parser = scivm_subparsers.add_parser('ssh-info', description='Obtain IP Address, Port, and username info to connect to a job for ssh/scp/etc. Use scivm ssh to log in to a job',
                                                 help='Obtain SSH information')
 ssh_info_parser.add_argument('-t', '--timeout', metavar='SECONDS', default=None, type=float,
                              help="Error if ssh not not ready by this number of seconds.")
 ssh_info_parser.add_argument('jid', type=int, help="job identifier") 
 
 
-exec_shell_parser = picloud_subparsers.add_parser('exec-shell', description='Test your configuration by starting a session defined by your environment, volumes, etc. and logging into it',
+exec_shell_parser = scivm_subparsers.add_parser('exec-shell', description='Test your configuration by starting a session defined by your environment, volumes, etc. and logging into it',
                                             help="SSH into configuration")
 exec_shell_parser.add_argument('--timeout', metavar='SECONDS', default=None, type=float,
                              help="Error if ssh not not ready by this number of seconds.")
@@ -215,7 +215,7 @@ exec_shell_parser.add_argument('-m', '--max-runtime', type=int, help='Job will b
 
 
 """Rest Parser"""
-rest_parser = picloud_subparsers.add_parser('rest', description="Module for managing PiCloud REST interfaces", 
+rest_parser = scivm_subparsers.add_parser('rest', description="Module for managing PiCloud REST interfaces", 
                                              help="Manage REST Interfaces")
 rest_subparsers = rest_parser.add_subparsers(title='commands', dest='_command', help='command help')
 rest_publish_parser = rest_subparsers.add_parser('publish', help='Publish a shell command to PiCloud which can be executed over REST')
@@ -250,7 +250,7 @@ rest_remove_parser.add_argument('label', help='Label of published function to re
 
 
 """Files Parser"""
-files_parser = picloud_subparsers.add_parser('files', description="Module for managing files stored on PiCloud's key-value store (Deprecated: see picloud bucket)", 
+files_parser = scivm_subparsers.add_parser('files', description="Module for managing files stored on PiCloud's key-value store (Deprecated: see scivm bucket)", 
                                              help="(Deprecated: see bucket) Manage files on key-value store")
 files_subparsers = files_parser.add_subparsers(title='commands', dest='_command', help='command help')
 
@@ -281,7 +281,7 @@ files_synctocloud_parser.add_argument('source', default=None, help='local path t
 files_synctocloud_parser.add_argument('name', default=None, help='Name for file to be stored on PiCloud')
 
 """Bucket Parser"""
-bucket_parser = picloud_subparsers.add_parser('bucket', description="Module for managing bucket objects stored on PiCloud's key-value store",
+bucket_parser = scivm_subparsers.add_parser('bucket', description="Module for managing bucket objects stored on PiCloud's key-value store",
                                               help="Manage data objects in your bucket")
 bucket_subparsers = bucket_parser.add_subparsers(title='commands', dest='_command', help='command help')
 
@@ -379,7 +379,7 @@ bucket_mpsafe_get_parser.add_argument('-s', '--sync', dest='do_sync', action='st
 
 
 """Realtime Parser"""
-realtime_parser = picloud_subparsers.add_parser('realtime', description='Module for managing realtime cores.', help = "Manage realtime cores")
+realtime_parser = scivm_subparsers.add_parser('realtime', description='Module for managing realtime cores.', help = "Manage realtime cores")
 realtime_subparsers = realtime_parser.add_subparsers(title='commands', dest='_command', help='command help')
 
 realtime_list_parser = realtime_subparsers.add_parser('list', help='List realtime reservations')
@@ -394,7 +394,7 @@ realtime_request_parser.add_argument('type', choices=['c1', 'c2', 'f2', 'm1', 's
 realtime_request_parser.add_argument('cores', type=int, help='The number of cores to reserve.')
 
 """ Volume Parser """
-volume_parser = picloud_subparsers.add_parser('volume', description='Module for managing volumes stored on PiCloud', help = "Manage volumes")
+volume_parser = scivm_subparsers.add_parser('volume', description='Module for managing volumes stored on PiCloud', help = "Manage volumes")
 volume_subparsers = volume_parser.add_subparsers(title='commands', dest='_command', help='command help')
 
 volume_list_parser = volume_subparsers.add_parser('list', help='List existing volumes', description='Lists existing cloud volumes')
@@ -403,7 +403,7 @@ volume_list_parser.add_argument('-d', '--desc', action='store_true', default=Fal
 
 volume_create_parser = volume_subparsers.add_parser('create', help='Create a volume on PiCloud')
 volume_create_parser.add_argument('name', help='Name of the volume to create (max 64 chars)')
-volume_create_parser.add_argument('mount_path', metavar='mount-path', help='Mount point (is relative then relative to /home/picloud) where jobs should expect this volume.')
+volume_create_parser.add_argument('mount_path', metavar='mount-path', help='Mount point (is relative then relative to /home/scivm) where jobs should expect this volume.')
 volume_create_parser.add_argument('-d', '--desc', default=None, help='Description of the volume (max 1024 chars)')
 
 volume_mkdir_parser = volume_subparsers.add_parser('mkdir', help='Create directory(ies) at cloud volume [path]')
@@ -427,7 +427,7 @@ volume_rm_parser.add_argument('volume_path', metavar='volume-path', nargs='+', h
 volume_rm_parser.add_argument('-r', '--recursive', action='store_true', default=False, help='Remove directories and their contents recursively')
 
 """ Environment Parser """
-environment_parser = picloud_subparsers.add_parser('env', description='Module for managing custom environments', help = "Manage environments")
+environment_parser = scivm_subparsers.add_parser('env', description='Module for managing custom environments', help = "Manage environments")
 environment_subparsers = environment_parser.add_subparsers(title='commands', dest='_command', help='command help')
 
 environment_list_parser = environment_subparsers.add_parser('list', help='List existing environments', description='Lists existing custom environments')
@@ -487,7 +487,7 @@ environment_run_script_parser.add_argument('filename', help='Local path to scrip
 """ Queue Parser """
 
 """
-queue_parser = picloud_subparsers.add_parser('queue', description="Module for managing PiCloud Queues", 
+queue_parser = scivm_subparsers.add_parser('queue', description="Module for managing PiCloud Queues", 
                                              help="Manage queues")
 queue_parsers = queue_parser.add_subparsers(title='commands', dest='_command', help='command help')
 
@@ -509,7 +509,7 @@ queue_delete_parser.add_argument('name', help='Name of queue to delete')
 """
 
 """ Cron Parser """
-cron_parser = picloud_subparsers.add_parser('cron', description="Module for managing PiCloud Crons, periodically invoked functions on PiCloud", 
+cron_parser = scivm_subparsers.add_parser('cron', description="Module for managing PiCloud Crons, periodically invoked functions on PiCloud", 
                                              help="Manage periodically invoked functions")
 cron_parsers = cron_parser.add_subparsers(title='commands', dest='_command', help='command help')
 cron_register_parser = cron_parsers.add_parser('register', help='Register a function which will be periodically invoked on PiCloud according to a cron schedule')
@@ -533,7 +533,7 @@ cron_manualrun_parser = cron_parsers.add_parser('run', help='Manually run the co
 cron_manualrun_parser.add_argument('label', help="Label of registered cron's function to manually invoke")
 
 """Wait for"""
-wait_for_parser = picloud_subparsers.add_parser('wait-for', description="Module for waiting on various aspects of a job. See subcommands", 
+wait_for_parser = scivm_subparsers.add_parser('wait-for', description="Module for waiting on various aspects of a job. See subcommands", 
                                              help="Wait on aspects of a job")
 wait_for_parsers = wait_for_parser.add_subparsers(title='commands', dest='_command', help='command help')
 port_parser = wait_for_parsers.add_parser('port', description='Wait for job to open port for listening. Return translated external IP address and port', 

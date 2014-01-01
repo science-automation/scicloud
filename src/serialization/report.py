@@ -36,7 +36,7 @@ from pickledebug import DebugPicklingError
 
 class SerializationReport():
     c = """Path to save object serialization meta-data.
-    This path is relative to ~/.picloud/"""    
+    This path is relative to ~/.scivm/"""    
     serializeLoggingPath = \
         cc.logging_configurable('serialize_logging_path',
                                           default='datalogs/',

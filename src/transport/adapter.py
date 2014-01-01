@@ -236,7 +236,7 @@ class SerializingAdapter(Adapter):
             size_limit = self.max_transmit_data
         totalsize = len(serializerInst.serializedObject)
         if totalsize > self.max_transmit_data:
-            exmessage = 'Excessive data (%i bytes) transmitted.  See help at %s' % (totalsize, 'http://docs.picloud.com')
+            exmessage = 'Excessive data (%i bytes) transmitted.  See help at %s' % (totalsize, 'http://docs.scivm.com')
             if hasattr(serializerInst,'str_debug_report'):
                 exmessage += ' Snapshot of what you attempted to %s:\n' % ('return' if is_result else 'send')
                 serializerInst.set_report_minsize(totalsize/3)

@@ -379,7 +379,7 @@ class newHTTPAbstractHandler(urllib2.AbstractHTTPHandler):
             effective_host = req.get_host()            
         #print 'effhost is %s. req host is %s' % (effective_host, host)
         
-        conn_key = effective_host, http_class, thread.get_ident()  #good enough for picloud
+        conn_key = effective_host, http_class, thread.get_ident()  #good enough for scivm
         #print 'conn_key is ', conn_key
         h = self.connections.get(conn_key)
             
