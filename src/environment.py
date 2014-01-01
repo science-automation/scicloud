@@ -1,7 +1,7 @@
 """
 PiCloud environment management.
 This module allows the user to manage their environments on PiCloud.
-See documentation at http://docs.picloud.com
+See documentation at http://docs.scivm.com
 """
 from __future__ import absolute_import
 """
@@ -278,7 +278,7 @@ def ssh(name, cmd=None):
     """
     hostname = get_setup_hostname(name)
     key_path = get_key_path()
-    status, stdout, stderr = common.ssh_session('picloud', hostname, key_path,
+    status, stdout, stderr = common.ssh_session('scivm', hostname, key_path,
                                                 run_cmd=cmd)
     if status:
         if stdout:
@@ -293,7 +293,7 @@ def ssh(name, cmd=None):
 def rsync(src_path, dest_path, delete=False, pipe_output=False):
     """Syncs data between a custom environment and the local filesystem. A
     setup server for the environment must already be launched. Also, keep in
-    mind that the picloud user account (which is used for the rsync operation)
+    mind that the scivm user account (which is used for the rsync operation)
     has write permissions only to the home directory and /tmp on the setup
     server. If additional permissions are required, consider doing the rsync
     manually from the setup server using sudo, or rsync to the home directory
@@ -317,12 +317,12 @@ def rsync(src_path, dest_path, delete=False, pipe_output=False):
         rsync('~/dataset1', 'my_env:')
 
     will ensure that a directory named 'dataset1' will exist in the user
-    picloud's home directory of environment 'my_env'. On the other hand,
+    scivm's home directory of environment 'my_env'. On the other hand,
 
         rsync(~/dataset1/', 'my_env:')
 
     will copy all the contents of 'dataset1' to the home directory of user
-    picloud. See rsync manual for more information.
+    scivm. See rsync manual for more information.
     
     If *delete* is True, files that exist in *dest_path* but not in *src_path*
     will be deleted.  By default, such files will not be removed.
@@ -337,7 +337,7 @@ def rsync(src_path, dest_path, delete=False, pipe_output=False):
     
     hostname = get_setup_hostname(env_name)
     try:
-        r_base = 'picloud@%s:' % hostname
+        r_base = 'scivm@%s:' % hostname
         r_paths = ' '.join(['%s%s' % (r_base, path) for path in env_paths])
         l_paths = ' '.join(local_paths)
         sync_args = (r_paths, l_paths) if dest_is_local else (l_paths, r_paths)

@@ -1,7 +1,7 @@
 """
 Queues provide an interface for flow-based programming on PiCloud.
 
-Please see our `Queue documentation <http://docs.picloud.com/queue.html>`_.
+Please see our `Queue documentation <http://docs.scivm.com/queue.html>`_.
 """
 
 from __future__ import with_statement
@@ -530,12 +530,12 @@ class CloudQueue(object):
             Set to 0 to disable processing
         
         ``retry_on``, ``max_retries``, ``retry_delay`` and ``on_error`` all relate to error handling.
-        Please see our online documentation: http://docs.picloud.com/queue.html#error-handling
+        Please see our online documentation: http://docs.scivm.com/queue.html#error-handling
         
         Certain special *kwargs* associated with cloud.call can be used for your *message_handler*: 
         
         * _cores:
-            Set number of cores your job will utilize. See http://docs.picloud.com/primer.html#choose-a-core-type/
+            Set number of cores your job will utilize. See http://docs.scivm.com/primer.html#choose-a-core-type/
             In addition to having access to more CPU cores, the amount of RAM available will grow linearly.
             Possible values for ``_cores`` depend on what ``_type`` you choose:
             
@@ -546,7 +546,7 @@ class CloudQueue(object):
             * s1: 1        
         * _env:
             A string specifying a custom environment you wish to run your job within.
-            See environments overview at http://docs.picloud.com/environment.html
+            See environments overview at http://docs.scivm.com/environment.html
         * _label: 
             A user-defined string label that is attached to the jobs. Labels can be
             used to filter when viewing jobs interactively (i.e. on the PiCloud website).         
@@ -574,7 +574,7 @@ class CloudQueue(object):
             * m1: 3.25 compute units, 8 GB ram, high I/O
             * s1: Up to 2 compute units (variable), 300 MB ram, low I/O, 1 IP per core
                            
-            See http://www.picloud.com/pricing/ for pricing information
+            See http://www.scivm.com/pricing/ for pricing information
         * _vol:
             A string or list of strings specifying a volume(s) you wish your jobs to have access to. 
                      

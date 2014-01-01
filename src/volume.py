@@ -1,7 +1,7 @@
 """
-PiCloud volume management.
+Science VM volume management.
 This module allows the user to manage their volumes on PiCloud.
-See documentation at http://docs.picloud.com
+See documentation at http://docs.scivm.com
 
 Be advised that you must have rsync installed for this module to work
 """
@@ -103,7 +103,7 @@ def create(name, mount_path, desc=None):
             will be mounted when jobs are run specifying access to this volume,
             i.e. mount point where jobs can access the contents of this volume.
             If a relative path is specified, then the mount point is the
-            specified path relative to /home/picloud, which is the directory
+            specified path relative to /home/scivm, which is the directory
             where all jobs initially start.
         * desc:
             (optional) description of the volume (max 1024 chars)
@@ -229,7 +229,7 @@ def sync(source, dest, delete=False):
                                    'See cloud.log' % exit_code)
 
 def delete(name):
-    """Deletes the picloud volume identified by *name*."""
+    """Deletes the scivm volume identified by *name*."""
     _send_vol_request('delete', {'name': name})
     cloudLog.debug('deleted volume %s', name)
 

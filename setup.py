@@ -39,9 +39,9 @@ for line in open(os.path.join(basedir, 'src/versioninfo.py')).readlines():
         
 
 if sys.version < '2.6':
-    abort('Python must be > 2.6 to use PiCloud')
+    abort('Python must be > 2.6 to use Science VM')
 elif sys.version > '3':
-    abort('This package cannot be used under Python3. Please get the Python3 package from http://www.picloud.com')
+    abort('This package cannot be used under Python3. Please get the Python3 package from http://www.scivm.com')
 
 
 #Python2.5 lacks important packages like ssl and (simple)json. Discover if needed
@@ -58,7 +58,7 @@ except ImportError:
         import simplejson
     except ImportError:
         if not use_setuptools:        
-            abort('simplejson must be installed to use picloud\nDownload it at http://pypi.python.org/pypi/simplejson/')
+            abort('simplejson must be installed to use scivm\nDownload it at http://pypi.python.org/pypi/simplejson/')
         else:
             requires.append("simplejson")
             
@@ -69,7 +69,7 @@ except ImportError:
         import OpenSSL
     except ImportError:
         if not use_setuptools:
-            abort('OpenSSL python bindings not installed.  These are required to ensure a secure connection to Picloud.\nDownload them at http://pypi.python.org/pypi/ssl')
+            abort('OpenSSL python bindings not installed.  These are required to ensure a secure connection to Science VM.\nDownload them at http://pypi.python.org/pypi/ssl')
         else: #inject requirement
             requires.append('ssl')
 
@@ -79,7 +79,7 @@ if os.name == 'nt':
     try: 
         import win32con
     except ImportError:
-        sys.stderr.write('Python for Windows extensions are highly recommended for using picloud.\nDownload them at http://sourceforge.net/projects/pywin32/')
+        sys.stderr.write('Python for Windows extensions are highly recommended for using scivm.\nDownload them at http://sourceforge.net/projects/pywin32/')
 
 if 'bdist_wininst' in sys.argv:
     # hot patch for bdist_wininst
@@ -141,7 +141,7 @@ if 'bdist_wininst' in sys.argv:
     rsync_dir = 'extra/rsync'
     rsync_files = [os.path.join(rsync_dir, f) for f in os.listdir(rsync_dir)]
     #rsync_install_dir = os.path.join(sys.prefix, 'lib', 'site-packages',
-    #                                 'cloud', 'extras')
+    #                                 'scicloud', 'extras')
 
     data_files = [('scripts', [distribute_file_path]),
                   ('extras', rsync_files)]
@@ -209,18 +209,18 @@ if 'bdist_wininst' in sys.argv:
 requires.append('setuptools')
 
 dist = setup(
-    name='cloud',
+    name='scicloud',
     version=release_version,  #defined by versioninfo.py exec
-    description='PiCloud client-side library',      
-    author='PiCloud, Inc.',
-    author_email='contact@picloud.com',
-    url='http://www.picloud.com',
+    description='Science VM client-side library',      
+    author='Science Automation, Inc.',
+    author_email='contact@scivm.com',
+    url='http://www.scivm.com',
     install_requires=requires,
     license='GNU LGPL',
     long_description=open('README.txt').read(),
-    packages=['cloud', 'cloud.cli', 'cloud.serialization', 'cloud.transport', 'cloud.util', 'cloud.util.cloghandler', 'cloud.shortcuts'],
-    package_dir = {'cloud': os.path.join(basedir, 'src')},
-    package_data= {'cloud.util.cloghandler' : ['README, PKG-INFO, LICENSE']}, 
+    packages=['scicloud', 'scicloud.cli', 'scicloud.serialization', 'scicloud.transport', 'scicloud.util', 'scicloud.util.cloghandler', 'scicloud.shortcuts'],
+    package_dir = {'scicloud': os.path.join(basedir, 'src')},
+    package_data= {'scicloud.util.cloghandler' : ['README, PKG-INFO, LICENSE']}, 
     platforms=['CPython 2.6', 'CPython 2.7'],      
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -235,7 +235,7 @@ dist = setup(
         'Topic :: System :: Distributed Computing',
         'Topic :: System :: Networking',
         ],
-    entry_points={'console_scripts': ['picloud = cloud.cli.main:main',]},
+    entry_points={'console_scripts': ['scivm = scicloud.cli.main:main',]},
     data_files = data_files,
     scripts = scripts,
     options = options
@@ -256,12 +256,12 @@ if 'install' in sys.argv and '--single-version-externally-managed' not in sys.ar
         
         # Try to install manpage and bash scripts:
         extra_files = [
-                 {'src' : 'bash_completion.d/picloud',
+                 {'src' : 'bash_completion.d/scivm',
                  'dst' : '/etc/bash_completion.d/',
                  'name' : 'bash completion scripts'},
-                 {'src' : 'doc/picloud.1',
+                 {'src' : 'doc/scivm.1',
                  'dst' : '%s/share/man/man1/' % prefix,
-                 'name' : 'PiCloud manpage'}
+                 'name' : 'Science VM manpage'}
                  ]                         
         # copy code borrowed from distutils.command.install_data
         # We can't use original as it raises an exception if the file cant be written;
@@ -287,9 +287,9 @@ if 'install' in sys.argv and '--single-version-externally-managed' not in sys.ar
     print '********************************************************'
     print '********************************************************'
     print '***                                                  ***'
-    print '***  Please run "picloud setup" to complete install  ***'
+    print '***  Please run "scivm setup" to complete install  ***'
     if os.name == 'nt':
-        print '*** picloud.exe is in the Scripts directory of Python***'            
+        print '*** scivm.exe is in the Scripts directory of Python***'            
     print '***                                                  ***'
     print '********************************************************'
     print '********************************************************'

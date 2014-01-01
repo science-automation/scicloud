@@ -112,7 +112,7 @@ def register(func, label, schedule, **kwargs):
     Certain special *kwargs* associated with cloud.call can be attached to the periodic jobs: 
 
     * _cores:
-        Set number of cores your job will utilize. See http://docs.picloud.com/primer.html#choose-a-core-type/
+        Set number of cores your job will utilize. See http://docs.scivm.com/primer.html#choose-a-core-type/
         In addition to having access to more CPU cores, the amount of RAM available will grow linearly.
         Possible values for ``_cores`` depend on what ``_type`` you choose:
         
@@ -123,7 +123,7 @@ def register(func, label, schedule, **kwargs):
         * s1: 1        
     * _env:
         A string specifying a custom environment you wish to run your job within.
-        See environments overview at http://docs.picloud.com/environment.html                
+        See environments overview at http://docs.scivm.com/environment.html                
     * _fast_serialization:
         This keyword can be used to speed up serialization, at the cost of some functionality.
         This affects the serialization of the spawned jobs' return value.
@@ -159,7 +159,7 @@ def register(func, label, schedule, **kwargs):
             * m1: 3.25 compute units, 8 GB ram, high I/O
             * s1: Up to 2 compute units (variable), 300 MB ram, low I/O, 1 IP per core
                        
-        See http://www.picloud.com/pricing/ for pricing information
+        See http://www.scivm.com/pricing/ for pricing information
     * _vol:
         A string or list of strings specifying a volume(s) you wish your jobs to have access to.          
                  

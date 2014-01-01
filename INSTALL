@@ -18,7 +18,7 @@ Download installer from http://pypi.python.org/pypi/setuptools
 
 Windows users (all versions):
   
-  We highly recommend having pywin32 installed before installing PiCloud. Get it at: 
+  We highly recommend having pywin32 installed before installing Science VM. Get it at: 
     http://sourceforge.net/projects/pywin32/'
   Due to cwRsync not being present in the source distribution, scicloud.volume will 
     not work if you install from source. Please use the binary installer if you need

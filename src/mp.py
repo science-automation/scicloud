@@ -1,14 +1,14 @@
 '''
 Cloud Multiprocessing Interface
 
-cloud.mp has effectively the same interface as cloud.
+scicloud.mp has effectively the same interface as cloud.
 
 All jobs will be run locally, on multiple processors, via the multiprocessing library
 
 Sample usage::
 
-    import cloud.mp
-    jid = cloud.mp.call(lambda: 3*3)
+    import scicloud.mp
+    jid = scicloud.mp.call(lambda: 3*3)
     >> Returns a job identifier
     cloud.mp.result(jid)
     >> Returns 9

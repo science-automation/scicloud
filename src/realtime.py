@@ -1,7 +1,7 @@
 """
-PiCloud realtime management.
+Science VM realtime management.
 This module allows the user to manage their realtime cores programmatically.
-See http://docs.picloud.com/tech_overview.html#scheduling
+See http://docs.scim.com/tech_overview.html#scheduling
 """
 from __future__ import absolute_import
 """

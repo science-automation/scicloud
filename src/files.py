@@ -1,7 +1,7 @@
 """
 DEPRECATED: Please use cloud.bucket
 
-For managing files on PiCloud's S3 store.
+For managing files on Science VM's S3 store.
 
 .. note::
 
@@ -658,7 +658,7 @@ def map(name, mapper, chunk_size=None, record_reader=None, combiner=None, reduce
         Reserved special *kwargs* (see docs for details):
         
         * _cores:
-            Set number of cores your job will utilize. See http://blog.picloud.com/2012/08/31/introducing-multicore-support/
+            Set number of cores your job will utilize. See http://docs.scivm.com
             In addition to having access to more cores, you will have _cores*RAM[_type] where _type is the _type you select
             Possible values depend on what _type you choose:
             
@@ -677,7 +677,7 @@ def map(name, mapper, chunk_size=None, record_reader=None, combiner=None, reduce
         * _env:
             A string specifying a custom environment you wish to run your jobs within.
             See environments overview at 
-            http://blog.picloud.com/2011/09/26/introducing-environments-run-anything-on-picloud/
+            http://docs.scivm.com
         * _fast_serialization:
             This keyword can be used to speed up serialization, at the cost of some functionality.
             This affects the serialization of both the map arguments and return values
@@ -721,7 +721,7 @@ def map(name, mapper, chunk_size=None, record_reader=None, combiner=None, reduce
                 's1'
                     variable compute units (2 cu max), 300 MB ram, low I/O, 1 IP per core                    
                                     
-                See http://www.picloud.com/pricing/ for pricing information
+                See http://www.scivm.com/pricing/ for pricing information
     """
     
     cloud_obj = _getcloud()

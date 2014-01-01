@@ -1,4 +1,4 @@
-`Science VM <http://www.scivm.com>`_ is a cloud-computing platform that integrates into the Python Programming Language. It enables you to leverage the computing power of Amazon Web Services without having to manage, maintain, or configure virtual servers.
+`Science VM <http://www.scivm.com>`_ is a cloud-computing platform that integrates into the Python Programming Language. It enables you to leverage the computing power of your datacenter and/or your choice of cloud providers without having to manage, maintain, or configure virtual servers.
 
 When using this Python library known as *scicloud*, Science VM will integrate seamlessly into your existing code base. To offload the execution of a function to our servers, all you must do is pass your desired function into the *scicloud* library. ScienceVM will run the function on its high-performance cluster. As you run more functions, our cluster auto-scales to meet your computational needs. 
 
@@ -8,12 +8,12 @@ The *scicloud* library also features a simulator, which can be used without a Sc
 
 Quick command-line example::
   
-	>>> import cloud
+	>>> import scicloud
 	>>> def square(x):
 	...     return x*x
 	...     
-	>>> jid = cloud.call(square,3)  #square(3) evaluated on Science VM
-	>>> cloud.result(jid)
+	>>> jid = scicloud.call(square,3)  #square(3) evaluated on Science VM
+	>>> scicloud.result(jid)
 	9
 
 Full package documentation is available at http://docs.scivm.com.  Some dependencies may be required depending on your platform and Python version; see INSTALL for more information.

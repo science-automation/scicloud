@@ -32,11 +32,11 @@ import distutils.dir_util
 if os.name == "nt":
     baselocation = os.environ.get('APPDATA')
     if baselocation:
-        baselocation = os.path.join(baselocation, 'picloud')
+        baselocation = os.path.join(baselocation, 'scivm')
     else:
-        baselocation =  os.path.join('~', '.picloud')
+        baselocation =  os.path.join('~', '.scivm')
 else:
-    baselocation = os.path.join('~', '.picloud')
+    baselocation = os.path.join('~', '.scivm')
 
 
 #name of configuration file:

@@ -210,12 +210,12 @@ def _execute_shell_program(command, return_file, ignore_exit_status, template_ar
     else:
         stdout_handle = sys.stdout
         
-    # ensure /home/picloud/ is present if any python interpreter is launched
+    # ensure /home/scivm/ is present if any python interpreter is launched
     env = os.environ 
     cur_path = env.get('PYTHONPATH','')
     if cur_path:
         cur_path = ':%s'  % cur_path
-    env['PYTHONPATH'] = '/home/picloud/' + cur_path
+    env['PYTHONPATH'] = '/home/scivm/' + cur_path
     
     #p = Popen(templated_cmd, shell=True, stdout=stdout_handle, stderr=PIPE, cwd=cwd, env=env)
     # execute in context of BASH for environment variables
