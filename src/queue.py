@@ -9,9 +9,9 @@ from __future__ import absolute_import
 """
 Copyright (c) 2013 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -55,12 +55,12 @@ __url = None
 from .util import  min_args, max_args
 
 from .util.zip_packer import Packer
-from .cloud import CloudException 
-from . import _getcloudnetconnection, _getcloud
+from .scicloud import CloudException 
+from . import _getscicloudnetconnection, _getscicloud
 
 
 import logging
-cloudLog = logging.getLogger('Cloud.queue')
+scicloudLog = logging.getLogger('Cloud.queue')
 
 _queue_create_query = 'queue/'
 _queue_list_query = 'queue/'
@@ -92,7 +92,7 @@ def _post(conn, url, post_values, headers={}):
     if post_values and 'success_action_redirect' in post_values:
         post_values['success_action_redirect'] = _strip_unicode(post_values['success_action_redirect'])
     
-    cloudLog.debug('post url %s with post_values=%s. headers=%s'
+    scicloudLog.debug('post url %s with post_values=%s. headers=%s'
                    % (url, post_values, headers))
     response =  conn.post(url, post_values, headers, use_gzip=False)
     
@@ -105,7 +105,7 @@ def list():
     
     Registration is lazy. See get() for more info."""
 
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     
     resp = conn.send_request(_queue_list_query, None)
 
@@ -124,7 +124,7 @@ def get(name):
 def exists(name):
     """Returns True if a CloudQueue of *name* is registered."""
     
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     
     resp = conn.send_request(_queue_exists_query.format(name=name), None)
     
@@ -176,7 +176,7 @@ class CloudQueue(object):
     def count(self):
         """Returns an approximation of the number of messages in the queue."""
     
-        conn = _getcloudnetconnection()
+        conn = _getscicloudnetconnection()
         
         resp = conn.send_request(_queue_count_query.format(name=self.name), None)
     
@@ -185,7 +185,7 @@ class CloudQueue(object):
     def info(self):
         """Returns a dictionary describing the queue (notably attachment information)"""
     
-        conn = _getcloudnetconnection()
+        conn = _getscicloudnetconnection()
         
         resp = conn.send_request(_queue_info_query.format(name=self.name), None)
     
@@ -194,7 +194,7 @@ class CloudQueue(object):
     def delete(self):
         """Delete the queue. All messages will be lost."""
     
-        conn = _getcloudnetconnection()
+        conn = _getscicloudnetconnection()
         
         resp = conn.send_request(_queue_delete_query.format(name=self.name), None)
     
@@ -203,7 +203,7 @@ class CloudQueue(object):
     def detach(self):
         """Detaches any attached message handler"""
     
-        conn = _getcloudnetconnection()
+        conn = _getscicloudnetconnection()
         
         resp = conn.send_request(_queue_detach_query.format(name=self.name), None)
     
@@ -246,7 +246,7 @@ class CloudQueue(object):
                               'message': base64.b64encode(serialized_message)}
                 
             except:
-                cloudLog.exception('Could not pickle message')
+                scicloudLog.exception('Could not pickle message')
                 raise
 
         if json_d:
@@ -299,7 +299,7 @@ class CloudQueue(object):
         Each object in *messages* must be pickle-able.
         
         Note that if the picked message exceeds 64kb, it will be temporarily saved 
-        to your cloud.bucket under the queue/ prefix."""
+        to your scicloud.bucket under the queue/ prefix."""
         
         return self._push(messages,delay)
     
@@ -323,7 +323,7 @@ class CloudQueue(object):
     
     def _low_level_push(self, encoded_messages, delay=0):
         """Performs the HTTP request to push encoded messages."""
-        conn = _getcloudnetconnection()
+        conn = _getscicloudnetconnection()
         resp = conn.send_request(_queue_messages_push_query.format(name=self.name), 
                          {'message': encoded_messages, 'delay': delay})
         return True
@@ -382,7 +382,7 @@ class CloudQueue(object):
     def _low_level_pop(self, max_count, timeout):
         """Pops a list of json-encoded messages"""
         
-        conn = _getcloudnetconnection()
+        conn = _getscicloudnetconnection()
     
         resp = conn.send_request(_queue_messages_pop_query.format(name=self.name), 
                                  {'max_count': max_count, 'timeout': timeout})
@@ -392,7 +392,7 @@ class CloudQueue(object):
     def _low_level_pop_tickets(self, max_count, timeout, deadline):
         """pops a list of json encoded messages"""
         
-        conn = _getcloudnetconnection()
+        conn = _getscicloudnetconnection()
     
         resp = conn.send_request(_queue_messages_pop_tickets_query.format(name=self.name), 
                                  {'max_count': max_count,
@@ -440,7 +440,7 @@ class CloudQueue(object):
                 decoded_msg, redirect_key = self._decode_message(datum)
                 messages.append(decoded_msg)
             except:
-                cloudLog.exception('Could not decode a message')
+                scicloudLog.exception('Could not decode a message')
                 if not self._raise_message_exceptions:
                     sys.stderr.write('Could not decode a message.\n')
                     traceback.print_exc()
@@ -487,7 +487,7 @@ class CloudQueue(object):
                                        deadline, redirect_key=redirect_key)
                 messages.append(ticket)
             except:
-                cloudLog.exception('Could not decode a message')
+                scicloudLog.exception('Could not decode a message')
                 if not self._raise_message_exceptions:
                     sys.stderr.write('Could not decode a message.\n')
                     traceback.print_exc()
@@ -532,7 +532,7 @@ class CloudQueue(object):
         ``retry_on``, ``max_retries``, ``retry_delay`` and ``on_error`` all relate to error handling.
         Please see our online documentation: http://docs.scivm.com/queue.html#error-handling
         
-        Certain special *kwargs* associated with cloud.call can be used for your *message_handler*: 
+        Certain special *kwargs* associated with scicloud.call can be used for your *message_handler*: 
         
         * _cores:
             Set number of cores your job will utilize. See http://docs.scivm.com/primer.html#choose-a-core-type/
@@ -583,8 +583,8 @@ class CloudQueue(object):
         # TODO: Bring back batch_size to the public API. If we do, it will
         # represent the number of messages an attachment should get at once.
         
-        cloud = _getcloud()
-        params = cloud._getJobParameters(message_handler, kwargs, 
+        scicloud = _getscicloud()
+        params = scicloud._getJobParameters(message_handler, kwargs, 
                                          ignore=['_depends_on', '_depends_on_errors', 
                                                  '_max_runtime', '_fast_serialization',
                                                  '_kill_process'])
@@ -624,7 +624,7 @@ class CloudQueue(object):
 
         self._validate_tickets(message_tickets)
         
-        conn = _getcloudnetconnection()
+        conn = _getscicloudnetconnection()
         
         def query_func(batched_tickets):
             conn.send_request(_queue_messages_ack_query.format(name=self.name), 
@@ -655,7 +655,7 @@ class CloudQueue(object):
         if not (self._max_deadline >= new_deadline >= self._min_deadline):
             raise ValueError('new_deadline must be between 3 and 43200 inclusive')                 
 
-        conn = _getcloudnetconnection()        
+        conn = _getscicloudnetconnection()        
         def query_func(batched_tickets):
             conn.send_request(_queue_messages_update_deadline_query.format(name=self.name), 
                               {'ticket' : batched_tickets, 'deadline' : new_deadline})
@@ -873,12 +873,12 @@ def _low_level_attach(queue, message_handler, expand_iterable_output, output_que
         # if obj doesn't have a message_handler member, error with callable needed
         
         if not hasattr(message_handler, 'message_handler'):
-            raise TypeError('cloud.queue.attach *message_handler* '
+            raise TypeError('scicloud.queue.attach *message_handler* '
                             'argument (%s) is not callable'
                             % (str(message_handler)))
         
         elif not callable(getattr(message_handler, 'message_handler')):
-            raise TypeError('cloud.queue.attach *message_handler* is class without (%s) callable'
+            raise TypeError('scicloud.queue.attach *message_handler* is class without (%s) callable'
                             'message_handler() member function'  % (str(message_handler)))
         
         implements_interface = True
@@ -909,17 +909,17 @@ def _low_level_attach(queue, message_handler, expand_iterable_output, output_que
                                     batch_size, readers_per_job, retry_on, max_retries, 
                                     retry_delay, on_error)
 
-    cloud = _getcloud()
-    conn = _getcloudnetconnection()
+    scicloud = _getscicloud()
+    conn = _getscicloudnetconnection()
     
     os_env_vars = params.pop('os_env_vars', None)
-    smessage_handler, sarg, logprefix, logcnt = cloud.adapter.cloud_serialize(attachment, 2, [],
+    smessage_handler, sarg, logprefix, logcnt = scicloud.adapter.scicloud_serialize(attachment, 2, [],
                                                                    logprefix='queue.',
                                                                    os_env_vars=os_env_vars)
     
     conn._update_params(params)
     
-    cloud.adapter.dep_snapshot()
+    scicloud.adapter.dep_snapshot()
     
     data = Packer()
     data.add(smessage_handler)
@@ -941,7 +941,7 @@ def _create_attachment(input_queue, message_handler, expand_iterable_output, out
     """Creates the function to be executed on PiCloud."""
     
     def attachment():
-        from cloud.transport import queue_attachment
+        from scicloud.transport import queue_attachment
         
         return queue_attachment.launch_attachment(input_queue, message_handler, expand_iterable_output, 
                                                   output_queues, batch_size, readers_per_job, 

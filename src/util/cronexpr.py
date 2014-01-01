@@ -231,7 +231,7 @@ class CronTime(object):
                         raise ValueError, "Invalid step provided " + str(s)
         elif "-" in elements[0]:
             r_list.extend(self._validate_range(elements[0], t))
-        else:   #picloud: support single number
+        else:   #piscicloud: support single number
             base = int(elements[0]) % step
             if base == 0 and t in ['mon','day']:
                 base += step

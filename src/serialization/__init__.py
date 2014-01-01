@@ -1,12 +1,12 @@
 """
 Serialization submodule
-Responsible for all cloud related serialization routines
+Responsible for all scicloud related serialization routines
 
 Copyright (c) 2009 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.

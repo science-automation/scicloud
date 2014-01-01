@@ -6,9 +6,9 @@ from __future__ import with_statement
 """
 Copyright (c) 2011 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -52,7 +52,7 @@ if DEBUG:
     def savestacks(sig, frame):
         print 'debugging..'
         contents = dumpstacks()
-        f = open('/tmp/cloud_%s' % os.getpid(), 'wb')
+        f = open('/tmp/scicloud_%s' % os.getpid(), 'wb')
         f.write(contents)
         f.close()    
     
@@ -71,8 +71,8 @@ except ImportError: #python 2.5 lacks izip_longest
     from .util import izip_longest 
 from itertools import izip, chain
 
-from . import cloudconfig as cc
-from .cloudlog import cloudLog
+from . import scicloudconfig as cc
+from .scicloudlog import scicloudLog
 from . import serialization
 
 from .util import funcname, validate_func_arguments, fix_time_element 
@@ -82,12 +82,12 @@ from .util.xrange_helper import filter_xrange_list, maybe_xrange_iter
 
 
 # set by the instantiation of a Cloud object
-_cloud = None
+_scicloud = None
 
 class CloudException(Exception):
     """
-    Represents an exception that has occurred by a job on the cloud.
-    CloudException will display the job id for failed cloud requests.
+    Represents an exception that has occurred by a job on the scicloud.
+    CloudException will display the job id for failed scicloud requests.
     """
     
     status = None
@@ -98,7 +98,7 @@ class CloudException(Exception):
     job_str = 'Job '
     status_str = 'Error '
     
-    def __init__(self, value, jid=None, status=None, retry=False, logger=cloudLog, hint=None):
+    def __init__(self, value, jid=None, status=None, retry=False, logger=scicloudLog, hint=None):
         self.jid = jid
         self.parameter = value
         self.status = status
@@ -127,7 +127,7 @@ class CloudException(Exception):
 class CloudTimeoutError(CloudException):
     """CloudException specifically for join timeouts"""
     
-    def __init__(self, value = 'Timed out', jid=None, logger = cloudLog):
+    def __init__(self, value = 'Timed out', jid=None, logger = scicloudLog):
         CloudException.__init__(self, value, jid, None, logger)
     
     
@@ -177,7 +177,7 @@ class Cloud(object):
     
     parentModule = None #string representation of module this object is placed in (if any)
     
-    __running_on_cloud = cc.transport_configurable('running_on_cloud', default=False, 
+    __running_on_scicloud = cc.transport_configurable('running_on_scicloud', default=False, 
                                         comment="Internal. States if running on PiCloud",
                                         hidden = True) 
     
@@ -190,25 +190,25 @@ class Cloud(object):
         
     @property
     def opened(self): 
-        """Returns whether the cloud is open"""
+        """Returns whether the scicloud is open"""
         return self.__isopen
     
     @classmethod
-    def running_on_cloud(cls):  #high level check
+    def running_on_scicloud(cls):  #high level check
         """
         Returns true iff current thread of execution is running on PiCloud servers.
         """
         
-        return cls.__running_on_cloud
+        return cls.__running_on_scicloud
            
     def __init__(self, adapter):
         self.adapter = adapter
-        adapter._cloud = self
+        adapter._scicloud = self
         self.openLock = threading.RLock()
         self._opening = False
     
     def open (self):
-        """Enable the cloud"""
+        """Enable the scicloud"""
         
         with self.openLock:
             
@@ -248,17 +248,17 @@ class Cloud(object):
                  
             self.__isopen = True
             if not self.adapter.isSlave:
-                cloudLog.info('Cloud started with adapter =%s', str(self.adapter))  
+                scicloudLog.info('Cloud started with adapter =%s', str(self.adapter))  
     
     
     def close(self):
         """
-        Terminate cloud connection (or simulation) and all threads utilized by cloud.
-        Returns True if closed cloud; False if cloud was already closed 
+        Terminate scicloud connection (or simulation) and all threads utilized by scicloud.
+        Returns True if closed scicloud; False if scicloud was already closed 
         
         .. note::
         
-            cloud will automatically re-open if you invoke any cloud.* again
+            scicloud will automatically re-open if you invoke any scicloud.* again
             
         .. warning::
         
@@ -269,18 +269,18 @@ class Cloud(object):
         if self.adapter.opened:
             self.adapter.close()    
         self.manager.stop()
-        cloudLog.info('Cloud closed with adapter =%s', str(self.adapter))
+        scicloudLog.info('Cloud closed with adapter =%s', str(self.adapter))
         self.__isopen = False
         return True                
     
     def _checkOpen(self):
-        """Open cloud if it is not already"""
+        """Open scicloud if it is not already"""
         if not self.opened:
             self.open()
     
     def is_simulated(self):
         """
-        Returns true iff cloud processor is being run on the local machine.
+        Returns true iff scicloud processor is being run on the local machine.
         """        
         return self.adapter.is_simulated() 
     
@@ -294,7 +294,7 @@ class Cloud(object):
     def needs_restart(self, **kwargs):        
         """
         For internal use
-        Return true if cloud requires restart based on changed params
+        Return true if scicloud requires restart based on changed params
         """
         
         if not self.__isopen: #by definition must restart
@@ -469,7 +469,7 @@ class Cloud(object):
     
     def call(self, func, *args, **kwargs):
         """
-        Create a 'job' that will invoke *func* (a callable) in the cloud.
+        Create a 'job' that will invoke *func* (a callable) in the scicloud.
         
         When the job is run, *func* will be invoked on PiCloud with the
         specified *args* and all non-reserved *kwargs*.
@@ -482,7 +482,7 @@ class Cloud(object):
         
             def add(x, y):
                 return x + y
-            cloud.call(add, 1, 2) 
+            scicloud.call(add, 1, 2) 
         
         This will create a job that when processed will invoke `add` with x=1 and y=2.
         
@@ -524,7 +524,7 @@ class Cloud(object):
             This affects the serialization of both the arguments and return values            
             Possible values keyword are:
                         
-            0. default -- use cloud module's enhanced serialization and debugging info            
+            0. default -- use scicloud module's enhanced serialization and debugging info            
             1. no debug -- Disable all debugging features for arguments            
             2. use cPickle -- Use Python's fast serializer, possibly causing PicklingErrors
             
@@ -571,7 +571,7 @@ class Cloud(object):
         self._checkOpen()
 
         if not callable(func):
-            raise TypeError( 'cloud.call first argument (%s) is not callable'  % (str(func) ))
+            raise TypeError( 'scicloud.call first argument (%s) is not callable'  % (str(func) ))
         
         parameters = self._getJobParameters(func, kwargs)
         
@@ -627,10 +627,10 @@ class Cloud(object):
         
         If *deadlock_check* is True (default), join will error if it believes deadlock 
         may have occured, as described in our  
-        `docs <http://docs.scivm.com/cloud_pitfalls.html#cloud-call-recursion>`_
+        `docs <http://docs.scivm.com/scicloud_pitfalls.html#scicloud-call-recursion>`_
         """
         
-        #TODO: Use cloud ticket manager with this
+        #TODO: Use scicloud ticket manager with this
         poll_interval = 1.0
         
         """
@@ -694,7 +694,7 @@ class Cloud(object):
             
             # due to lag with status testing, only timeout if in timeout condition before test
             can_timeout = timeout and (time.time() > start_time + timeout) 
-            if deadlock_check and (self.running_on_cloud() or self.adapter.isSlave):
+            if deadlock_check and (self.running_on_scicloud() or self.adapter.isSlave):
                 can_recurse_timeout = (time.time() > latest_job_started_time + max_recursive_wait)
             
             if neededJids:
@@ -724,14 +724,14 @@ class Cloud(object):
                 break
 
             if can_timeout:
-                raise CloudTimeoutError('cloud.join timed out', neededJids)
+                raise CloudTimeoutError('scicloud.join timed out', neededJids)
             
             # live lock handling
             if old_queued != fse.num_queued:
                 latest_job_started_time = time.time()
                 old_queued = fse.num_queued
             elif can_recurse_timeout and old_queued:
-                raise CloudTimeoutError('cloud.join detected possible dead-lock due to recursive jobs. See http://docs.scivm.com/cloud_pitfalls.html#cloud-call-recursion', neededJids)
+                raise CloudTimeoutError('scicloud.join detected possible dead-lock due to recursive jobs. See http://docs.scivm.com/scicloud_pitfalls.html#scicloud-call-recursion', neededJids)
             
             if not adapter_has_join:
                 time.sleep(poll_interval) #poll
@@ -742,7 +742,7 @@ class Cloud(object):
         the job does not exist, a CloudException is thrown.
         This method also accepts an iterable describing *jids*, in which case a respective list
         of statuses is returned."""
-        #really a wrapper for cloud.info
+        #really a wrapper for scicloud.info
         deseq = False
         if not hasattr(jids,'__iter__'):
             jids = [jids]
@@ -774,7 +774,7 @@ class Cloud(object):
         
         If *deadlock_check* is True (default), result will error if it believes deadlock 
         may have occured, as described in our  
-        `docs <http://docs.scivm.com/cloud_pitfalls.html#cloud-call-recursion>`_
+        `docs <http://docs.scivm.com/scicloud_pitfalls.html#scicloud-call-recursion>`_
         """        
         return self.__result(jids, timeout, ignore_errors, deadlock_check)
  
@@ -791,7 +791,7 @@ class Cloud(object):
         If *timeout* is set to a number, a call to the iterator's next function 
         will raise a CloudTimeoutError after *timeout* seconds if no result becomes available.
         
-        *num_in_parallel* controls how many results are read-ahead from the cloud
+        *num_in_parallel* controls how many results are read-ahead from the scicloud
         Set this to 0 to use the allowed maximum.
         
         If *ignore_errors* is True, a job that errored will return the CloudException describing 
@@ -879,7 +879,7 @@ class Cloud(object):
                         self.cacheManager.putCached(jid, status='done', result=result)
                                                 
                 elif interpret['datatype'] == 'json':
-                    if interpret['action'] == 'cloud.iresult_global':
+                    if interpret['action'] == 'scicloud.iresult_global':
                         sub_jids = json.loads(result)
                         sub_results_iter = chain.from_iterable( self.__iresult(sub_jids, num_in_parallel=1, by_jid=True) )
                         outresults.append(sub_results_iter)
@@ -926,14 +926,14 @@ class Cloud(object):
                             jids_testing.append(jidIterator.next())
                     except StopIteration:
                         if not jids_testing:  #loop is done!
-                            cloudLog.debug('cloud.iresult.result_loop has completed')
+                            scicloudLog.debug('scicloud.iresult.result_loop has completed')
                             isDone.append(True)
                             break 
                     
                     with result_cv:
                         while True:
                             if not iterator_ref(): #GC Detection on iterator removal
-                                cloudLog.debug('cloud.iresult.result_loop detected garbage collection')
+                                scicloudLog.debug('scicloud.iresult.result_loop detected garbage collection')
                                 break
                             
                             if (len(ready_results) < num_in_parallel and not errorJid):
@@ -949,7 +949,7 @@ class Cloud(object):
                         statuses = ['done' for _ in xrange(num_jids)]
                     else:
                         statuses = self.status( jids_testing )
-                        cloudLog.debug('cloud.__iresult.result_loop testing %s. got status %s' % \
+                        scicloudLog.debug('scicloud.__iresult.result_loop testing %s. got status %s' % \
                                        (jids_testing, statuses))
                     ctr = 0
                     jids_to_access = []
@@ -980,7 +980,7 @@ class Cloud(object):
                         continue                
                 
                     if not by_jid:
-                        cloudLog.debug('cloud.__iresult.result_loop getting results of %s' % jids_to_access)
+                        scicloudLog.debug('scicloud.__iresult.result_loop getting results of %s' % jids_to_access)
 
                     new_results  = self.__result(jids_to_access, by_jid=by_jid) 
                     with result_cv:
@@ -989,12 +989,12 @@ class Cloud(object):
                             jids_testing.popleft()
                         result_cv.notify()
 
-                cloudLog.debug('cloud.__iresult.result_loop is terminating')
+                scicloudLog.debug('scicloud.__iresult.result_loop is terminating')
                 with result_cv:
                     result_cv.notify()
             
             except Exception, e:
-                cloudLog.exception('cloud.iresult.result_loop crashed')
+                scicloudLog.exception('scicloud.iresult.result_loop crashed')
                 isDone.append(e)
                 with result_cv:
                     result_cv.notify()
@@ -1013,9 +1013,9 @@ class Cloud(object):
             
             def _checkDone(self):
                 if isDone:
-                    cloudLog.debug('cloud.__iresult.ResultIterator is done.')
+                    scicloudLog.debug('scicloud.__iresult.ResultIterator is done.')
                     if isinstance(isDone[0], Exception):  #something went wrong
-                        cloudLog.error('ResultIterator detected that polling thread crashed')
+                        scicloudLog.error('ResultIterator detected that polling thread crashed')
                         self.crashed = True #if next is ever called again, raise StopIteration
                         raise isDone[0]
                     raise StopIteration
@@ -1029,14 +1029,14 @@ class Cloud(object):
                 with result_cv:                    
                     if not errorJid and not ready_results:
                         self._checkDone()
-                        cloudLog.debug('cloud.__iresult.ResultIterator is going to sleep')
+                        scicloudLog.debug('scicloud.__iresult.ResultIterator is going to sleep')
                         result_cv.wait(timeout)
                         if not errorJid and not ready_results:
                             self._checkDone()
                             
                             #we timed out
                             raise CloudTimeoutError('__iresult iterator timed out')
-                        cloudLog.debug('cloud.__iresult.ResultIterator is awake. num ready results = %s errorJid is %s' % (len(ready_results), errorJid))
+                        scicloudLog.debug('scicloud.__iresult.ResultIterator is awake. num ready results = %s errorJid is %s' % (len(ready_results), errorJid))
                     
                     result_cv.notify() #waken result_loop thread
                     
@@ -1058,7 +1058,7 @@ class Cloud(object):
         ri = ResultIterator(self)
         result_thread = threading.Thread(target=result_loop, args=(weakref.ref(ri),))  
         result_thread.daemon = True
-        result_thread.name = 'cloud.iresult.result_loop'
+        result_thread.name = 'scicloud.iresult.result_loop'
         result_thread.start()  
         
         return ri
@@ -1137,7 +1137,7 @@ class Cloud(object):
         If *info_requested* is None, info_requested will be status, stdout, stderr, and runtime.
         Set *info_requested* to 'all' to obtain info about every possible item                
 	    
-	    e.g. cloud.info(42,'stdout') to get standard output of job 42
+	    e.g. scicloud.info(42,'stdout') to get standard output of job 42
         """
                 
         if not hasattr(jids,'__iter__'):
@@ -1258,7 +1258,7 @@ class Cloud(object):
     def map(self, func, *args, **kwargs):
         """
         Map *func* (a callable) over argument sequence(s).
-        cloud.map is meant to mimic a regular map call such as::
+        scicloud.map is meant to mimic a regular map call such as::
             
             map(lambda x,y: x*y, xlist, ylist)
         
@@ -1271,20 +1271,20 @@ class Cloud(object):
         In practice, the jids can (and should) be treated as a single jid;
         the returned iterable may be passed directly into status, result, etc.
         
-        Using cloud.result on the returned jids will return a list of job return values 
+        Using scicloud.result on the returned jids will return a list of job return values 
         (each being the result of applying the function to an item of the argument sequence(s)).
         
         Example::
     
             def mult(x,y):
                 return x*y
-            jids = cloud.map(mult, [1,3,5], [2,4,6]) 
+            jids = scicloud.map(mult, [1,3,5], [2,4,6]) 
     
         This will cause mult3 to be invoked on PiCloud's cluster with x=2
         
         Results::
     
-            cloud.result(jids)
+            scicloud.result(jids)
             >> [2,12,30]
         
         The result is [1*2,3*4,5*6]
@@ -1296,7 +1296,7 @@ class Cloud(object):
             to close the constant. 
             The `Lambda <http://marakana.com/bookshelf/python_fundamentals_tutorial/functional_programming.html#_anonymous_functions>`_
             keyword is especially elegant::            
-                cloud.map(lambda a, c: foo(a=a, b=b_constant, c=c), a_list, c_list)
+                scicloud.map(lambda a, c: foo(a=a, b=b_constant, c=c), a_list, c_list)
                     
         Reserved special *kwargs* (see docs for details) are very similar to call:
         
@@ -1327,7 +1327,7 @@ class Cloud(object):
             This affects the serialization of both the arguments and return values            
             Possible values keyword are:
                         
-            0. default -- use cloud module's enhanced serialization and debugging info            
+            0. default -- use scicloud module's enhanced serialization and debugging info            
             1. no debug -- Disable all debugging features for arguments            
             2. use cPickle -- Use Python's fast serializer, possibly causing PicklingErrors
             
@@ -1374,17 +1374,17 @@ class Cloud(object):
         
         #TODO: Add split/chunking param.. see multiprocessing
         if not callable(func):
-            raise TypeError( 'cloud.map first argument (%s) is not callable'  % (str(func) ))
+            raise TypeError( 'scicloud.map first argument (%s) is not callable'  % (str(func) ))
         
         if len(args) == 0:
-            raise ValueError('cloud.map needs at least 2 arguments')
+            raise ValueError('scicloud.map needs at least 2 arguments')
         
         self._checkOpen()
                 
         parameters = self._getJobParameters(func, kwargs)
         if kwargs:
             first_kwd = kwargs.keys()[0]
-            raise ValueError('Cannot pass keyword arguments into cloud.map Unexpected keyword argument %s' % first_kwd)
+            raise ValueError('Cannot pass keyword arguments into scicloud.map Unexpected keyword argument %s' % first_kwd)
         
         #typecheck and access correct iterator:
         argIters = []
@@ -1403,7 +1403,7 @@ class Cloud(object):
                     map_len = None
         
         if map_len > 10000: #hard limit
-            raise ValueError('No more than 10,000 arguments can be submitted in cloud.map')
+            raise ValueError('No more than 10,000 arguments can be submitted in scicloud.map')
         
         parameters['map_len'] = map_len 
         
@@ -1430,7 +1430,7 @@ class CloudTicketManager(threading.Thread):
     associated with specific jobs/tickets.
     """
     
-    cloud = None
+    scicloud = None
     
     # list of tickets to 
     pending_tickets = None
@@ -1447,10 +1447,10 @@ class CloudTicketManager(threading.Thread):
     # event indicating if thread should die
     die_event = None
     
-    def __init__(self, cloud):
+    def __init__(self, scicloud):
         threading.Thread.__init__(self)
     
-        self.cloud = cloud
+        self.scicloud = scicloud
         self.pending_tickets = []
         self.cv = threading.Condition()
         
@@ -1472,7 +1472,7 @@ class CloudTicketManager(threading.Thread):
     def add_callbacks(self, ticket, callbacks, type='success'):
         """
         Callbacks should be a function or a list of functions that
-        take as its first argument the return value of the cloud call.
+        take as its first argument the return value of the scicloud call.
         Callbacks will be called in order from left to right. 
         
         Returns True if callbacks are added, False otherwise. 
@@ -1525,7 +1525,7 @@ class CloudTicketManager(threading.Thread):
             with self.cv:
                 
                 # get status of tickets
-                statuses = self.cloud.status(self.pending_tickets)
+                statuses = self.scicloud.status(self.pending_tickets)
                 
                 # for each ticket, call callbacks if in a finished state
                 for ticket, status in zip(self.pending_tickets, statuses):
@@ -1546,6 +1546,6 @@ class CloudTicketManager(threading.Thread):
                         self.pending_tickets.remove(ticket)
                     
 """hack to handle S3 glitches with scivm bucket"""
-if Cloud.running_on_cloud():
+if Cloud.running_on_scicloud():
     import socket
     socket.setdefaulttimeout(60)

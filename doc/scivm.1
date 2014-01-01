@@ -34,7 +34,7 @@ For complete documentation, see: http://docs.scivm.com/
 .P
 scivm has the following modules to facilitate interacting with Science VM:
 .SS setup
-This module is used to setup your client computer to use the cloud. Optional Arguments:
+This module is used to setup your client computer to use the scicloud. Optional Arguments:
 .P
 --help,-h: show this help message and exit
 
@@ -65,16 +65,16 @@ Optional Arguments:
 
 --help,-h            show this help message and exit
 
-Commands:  {sync-to-cloud,get,sync-from-cloud,list,put,get-md5,delete}
+Commands:  {sync-to-scicloud,get,sync-from-scicloud,list,put,get-md5,delete}
 
    delete              Delete an object stored on Science VM
    get                 Retrieve an object from Science VM
    get-md5             Get the md5 checksum of an object stored on Science VM
    list                List keys stored in your bucket
    put                 Store an object on Science VM
-   sync-from-cloud     Download object if it does not exist locally or 
+   sync-from-scicloud     Download object if it does not exist locally or 
                        has changed
-   sync-to-cloud       Upload object only if it does not exist on Science VM 
+   sync-to-scicloud       Upload object only if it does not exist on Science VM 
 	                  or has changed
 .SS volume
 This module is used for managing volumes stored on Science VM. See http://docs.scivm.com/storage.html
@@ -87,9 +87,9 @@ Commands: {create,list,sync,ls,rm,delete}
    list                List existing volumes
    create              Create a volume on Science VM
    sync                Sync local directory to volume on Science VM
-   delete              Delete a cloud volume
-   ls                  List the contents of a cloud volume [path]
-   rm                  Remove contents from a cloud volume
+   delete              Delete a scicloud volume
+   ls                  List the contents of a scicloud volume [path]
+   rm                  Remove contents from a scicloud volume
    
 .SS realtime
 This module is used for managing realtime cores on Science VM. See http://docs.scivm.com/realtime_cores.html
@@ -114,13 +114,13 @@ List realtime reservations       :   scivm realtime list
 .
 .
 .SH LICENSE
-All files within the Science VM cloud client package distribution are subject to the 
+All files within the Science VM scicloud client package distribution are subject to the 
 GNU Lesser General Public License v 2.1 or other open source licenses. 
 Refer to the LICENSE file of the source distribution for the details.
 
 .SH AUTHOR
 
-The Science VM cloud client package was developed by the Picloud team (http://www.picloud.com) and has not been forked and extended by the team at Science VM (www.scivm.com).
+The Science VM scicloud client package was developed by the Piscicloud team (http://www.picloud.com) and has not been forked and extended by the team at Science VM (www.scivm.com).
 This manual page was written by Amit Saha (amitksaha@fedoraproject.org).
 
 .SH SEE ALSO

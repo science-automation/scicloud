@@ -1,13 +1,13 @@
 """
 PiCloud configuration settings
-Two settings are stored in this file - the baseLocation for cloud AND the config file location
+Two settings are stored in this file - the baseLocation for scicloud AND the config file location
 All other variables are stored in a config file managed by this
 
 Copyright (c) 2009 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -28,7 +28,7 @@ import os
 import distutils
 import distutils.dir_util
 
-#Location for all cloud configuration
+#Location for all scicloud configuration
 if os.name == "nt":
     baselocation = os.environ.get('APPDATA')
     if baselocation:
@@ -40,7 +40,7 @@ else:
 
 
 #name of configuration file:
-configname = 'cloudconf.py'
+configname = 'scicloudconf.py'
 
 _needsWrite = False
 
@@ -69,7 +69,7 @@ def get_config_value(section, varname, default, comment=None, hidden=False):
     except ValueError, e:
         import logging
         log = logging.getLogger('Cloud') #might not work if logging not yet initialized
-        log.warning('Option %s.%s in cloudconf.py must have type %s. Reverting to default' % (section, varname, typ.__name__))
+        log.warning('Option %s.%s in scicloudconf.py must have type %s. Reverting to default' % (section, varname, typ.__name__))
         return default    
 
 """Sections defined below"""    
@@ -126,4 +126,4 @@ else:
         
     if not config.read(os.path.join(fullconfigpath,configname)):
         _needsWrite = True
-    #cloudLog.debug("Cloud Configuration imported")
+    #scicloudLog.debug("Cloud Configuration imported")

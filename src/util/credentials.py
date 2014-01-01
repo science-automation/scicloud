@@ -4,16 +4,16 @@ from __future__ import with_statement
 Provides for storage and retrieval of PiCloud credentials
 
 Current credentials include:
-- cloudauth: key/secretkey
+- scicloudauth: key/secretkey
 - ssh private keys (environments/volumes) 
 '''
 import distutils
 import os
 
 from ConfigParser import RawConfigParser
-from .. import cloudconfig as cc
+from .. import scicloudconfig as cc
 import logging
-cloudLog = logging.getLogger('Cloud.credentials')
+scicloudLog = logging.getLogger('Cloud.credentials')
 
 
 credentials_dir = os.path.expanduser(os.path.join(cc.baselocation,'credentials'))
@@ -31,7 +31,7 @@ def save_keydef(key_def, api_key=None):
     else:    
         assert (key_def['api_key'] == int(api_key))    
     key_cache[api_key] = key_def
-    write_cloudauth(key_def) #flush authorization
+    write_scicloudauth(key_def) #flush authorization
     write_sshkey(key_def)    #flush ssh key
     
 def download_key_by_key(api_key, api_secretkey):
@@ -39,7 +39,7 @@ def download_key_by_key(api_key, api_secretkey):
     api_key = int(api_key)       
     from ..account import get_key_by_key
     key_def = get_key_by_key(api_key, api_secretkey)
-    cloudLog.debug('Saving key for api_key %s' % api_key)
+    scicloudLog.debug('Saving key for api_key %s' % api_key)
     save_keydef(key_def, api_key)
     return key_def
 
@@ -52,17 +52,17 @@ def download_key_by_login(api_key, username, password):
     return key_def
 
 def verify_key(api_key):
-    """Return true if we have valid sshkey and cloudauth for this key.
+    """Return true if we have valid sshkey and scicloudauth for this key.
     False if any information is missing"""
     key_def = key_cache.get(api_key, {})
     if 'api_secretkey' not in key_def:    
         if not resolve_secretkey(api_key):
-            cloudLog.debug('verify_key failed: could not find secretkey for %s', api_key)
+            scicloudLog.debug('verify_key failed: could not find secretkey for %s', api_key)
             return False
     if not 'private_key' in key_def:
         res = verify_sshkey(api_key)
         if not res:
-            cloudLog.debug('verify_key failed: could not find sshkey for %s', api_key)
+            scicloudLog.debug('verify_key failed: could not find sshkey for %s', api_key)
         return res
 
 def get_credentials_path(api_key):
@@ -72,21 +72,21 @@ def get_credentials_path(api_key):
     try:
         distutils.dir_util.mkpath(path)
     except distutils.errors.DistutilsFileError:
-        cloudLog.exception('Could not generate credentials path %s' % path)
+        scicloudLog.exception('Could not generate credentials path %s' % path)
     return path
 
 """ Api keys"""
 #constants:
 api_key_section = 'ApiKey'
 
-def get_cloudauth_path(api_key):
-    """Locate cloudauth path"""
+def get_scicloudauth_path(api_key):
+    """Locate scicloudauth path"""
     base_path = get_credentials_path(api_key)
-    return os.path.join(base_path, 'cloudauth')
+    return os.path.join(base_path, 'scicloudauth')
 
-def read_cloudauth(api_key):
-    """Load cloudauth for api_key"""
-    path = get_cloudauth_path(api_key)
+def read_scicloudauth(api_key):
+    """Load scicloudauth for api_key"""
+    path = get_scicloudauth_path(api_key)
     if not os.path.exists(path):
         raise IOError('path %s not found' % path)
     config = RawConfigParser()
@@ -102,18 +102,18 @@ def read_cloudauth(api_key):
     return key_def
 
 def get_saved_secretkey(api_key):
-    """Resolve the secret key for this api_key from the saved cloudauth credentials"""
+    """Resolve the secret key for this api_key from the saved scicloudauth credentials"""
     api_key = int(api_key)
     key_def = key_cache.get(api_key)
     if not key_def:
-        key_def = read_cloudauth(api_key)
+        key_def = read_scicloudauth(api_key)
     return key_def['api_secretkey']
 
-def write_cloudauth(key_def):
-    """Write key/secret key information defined by key_def into cloudauth"""
+def write_scicloudauth(key_def):
+    """Write key/secret key information defined by key_def into scicloudauth"""
     api_key = str(key_def['api_key'])
     api_secretkey = key_def['api_secretkey']    
-    path = get_cloudauth_path(api_key)
+    path = get_scicloudauth_path(api_key)
         
     config = RawConfigParser()
     config.add_section(api_key_section)
@@ -123,11 +123,11 @@ def write_cloudauth(key_def):
         with open(path, 'wb') as configfile:
             config.write(configfile)
     except IOError, e:
-        cloudLog.exception('Could not save cloudauth credentials to %s' % path)
+        scicloudLog.exception('Could not save scicloudauth credentials to %s' % path)
     try:
         os.chmod(path, 0600)
     except:
-        cloudLog.exception('Could not set permissions on %s' % path)
+        scicloudLog.exception('Could not set permissions on %s' % path)
         
 
 def resolve_secretkey(api_key):
@@ -138,7 +138,7 @@ def resolve_secretkey(api_key):
         secretkey = get_saved_secretkey(api_key)
     except Exception, e:
         if not isinstance(e, IOError):
-            cloudLog.exception('Unexpected error reading credentials for api_key %s' % api_key)
+            scicloudLog.exception('Unexpected error reading credentials for api_key %s' % api_key)
         return None
     else:
         return secretkey        
@@ -174,7 +174,7 @@ def verify_sshkey(api_key):
         try:
             os.chmod(path, 0600)
         except:
-            cloudLog.exception('Could not set permissions on %s' % path)
+            scicloudLog.exception('Could not set permissions on %s' % path)
         return True
     return False
 
@@ -187,12 +187,12 @@ def write_sshkey(key_def):
         with open(path, 'wb') as f:
             f.write(private_key)
     except IOError, e:
-        cloudLog.exception('Could not save ssh private key to %s' % path)
+        scicloudLog.exception('Could not save ssh private key to %s' % path)
     else:
         try:
             os.chmod(path, 0600)
         except:
-            cloudLog.exception('Could not set permissions on %s' % path)
+            scicloudLog.exception('Could not set permissions on %s' % path)
         
     
 def test(key, secretkey):

@@ -4,7 +4,7 @@ To install, run::
 
   python setup.py install
 
-(You may wish to run sudo python setup.py install if you wish to install cloud for all users.)
+(You may wish to run sudo python setup.py install if you wish to install scicloud for all users.)
 
 Requirements (all users):
 
@@ -20,9 +20,9 @@ Windows users (all versions):
   
   We highly recommend having pywin32 installed before installing Science VM. Get it at: 
     http://sourceforge.net/projects/pywin32/'
-  Due to cwRsync not being present in the source distribution, scicloud.volume will 
+  Due to cwRsync not being present in the source distribution, sciscicloud.volume will 
     not work if you install from source. Please use the binary installer if you need
-    scicloud.volume.
+    sciscicloud.volume.
   
 
 After installing, use the scivm command-line interface (CLI) to set up your machine.  Run 'scivm setup'.

@@ -2,15 +2,15 @@
 Interface to publish functions to PiCloud, allowing them to be invoked via the REST API
 
 Api keys must be configured before using any functions in this module.
-(via cloudconf.py, cloud.setkey, or being on PiCloud server)
+(via scicloudconf.py, scicloud.setkey, or being on PiCloud server)
 """
 from __future__ import absolute_import
 """
 Copyright (c) 2011 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -28,7 +28,7 @@ import sys
 import re
 import __builtin__
 
-from . import _getcloud, _getcloudnetconnection
+from . import _getscicloud, _getscicloudnetconnection
 from .util.zip_packer import Packer
 from .util import getargspec
 
@@ -47,24 +47,24 @@ _invoke_query = 'rest/invoke/%s/'
 _invoke_map_query = 'rest/invoke/%s/map/'
 
 """
-This module utilizes the cloud object extensively
+This module utilizes the scicloud object extensively
 The functions can be viewed as instance methods of the Cloud (hence accessing of protected variables)
 """
 
    
 
 def _low_level_publish(func, label, out_encoding, arg_encoding, params, func_desc):
-    cloud = _getcloud()
-    conn = _getcloudnetconnection()
+    scicloud = _getscicloud()
+    conn = _getscicloudnetconnection()
         
     os_env_vars = params.pop('os_env_vars', None)
-    sfunc, sarg, logprefix, logcnt = cloud.adapter.cloud_serialize(func, 
+    sfunc, sarg, logprefix, logcnt = scicloud.adapter.scicloud_serialize(func, 
         params['fast_serialization'], 
         [], logprefix='rest.', os_env_vars=os_env_vars)
 
     #Below is derived from HttpAdapter.job_add
     conn._update_params(params)
-    cloud.adapter.dep_snapshot() #let adapter make any needed calls for dep tracking
+    scicloud.adapter.dep_snapshot() #let adapter make any needed calls for dep tracking
     data = Packer()
     data.add(sfunc)
     params['data'] = data.finish()
@@ -88,7 +88,7 @@ def publish(func, label, out_encoding='json', **kwargs):
     The return value is the URL which can be HTTP POSTed to to invoke *func*. 
     See http://docs.scivm.com/rest.html for information about PiCloud's REST API    
     
-    Certain special *kwargs* associated with cloud.call can be attached to the periodic jobs: 
+    Certain special *kwargs* associated with scicloud.call can be attached to the periodic jobs: 
         
     * _cores:
         Set number of cores your job will utilize. See http://docs.scivm.com/primer.html#choose-a-core-type/
@@ -109,7 +109,7 @@ def publish(func, label, out_encoding='json', **kwargs):
         The stored function will always be serialized by the enhanced serializer, with debugging features.
         Possible values keyword are:
                     
-        0. default -- use cloud module's enhanced serialization and debugging info            
+        0. default -- use scicloud module's enhanced serialization and debugging info            
         1. no debug -- Disable all debugging features for result            
         2. use cPickle -- Use python's fast serializer, possibly causing PicklingErrors
     * _max_runtime:
@@ -145,7 +145,7 @@ def publish(func, label, out_encoding='json', **kwargs):
     """
     
     if not callable(func):
-        raise TypeError( 'cloud.rest.publish first argument (%s) is not callable'  % (str(func) ))        
+        raise TypeError( 'scicloud.rest.publish first argument (%s) is not callable'  % (str(func) ))        
     
     m = re.match(r'^[A-Z0-9a-z_+-.]+$', label)
     if not m:
@@ -166,8 +166,8 @@ def publish(func, label, out_encoding='json', **kwargs):
     if not isinstance(out_encoding, str):
         raise TypeError('out_encoding must be an ASCII string')
     
-    cloud = _getcloud()
-    params = cloud._getJobParameters(func, kwargs, 
+    scicloud = _getscicloud()
+    params = scicloud._getJobParameters(func, kwargs, 
                                              ignore=['_label', '_depends_on', '_depends_on_errors'])
     
     #argument specification for error checking and visibility
@@ -195,7 +195,7 @@ def remove(label):
     except (UnicodeDecodeError, UnicodeEncodeError):
         raise TypeError('label must be an ASCII string')
     
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     
     conn.send_request(_remove_query, {'label': label})   
     
@@ -206,7 +206,7 @@ def list():
     List labels of published functions
     """ 
     #note beware: List is defined as this function
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     resp = conn.send_request(_list_query, {})
     return resp['labels']
 
@@ -214,7 +214,7 @@ def info(label):
     """
     Retrieve information about a published function specified by *label*
     """
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     resp = conn.send_request(_info_query, {'label':label})
     del resp['data']
     
@@ -224,7 +224,7 @@ def _invoke(label, argument_dict, is_map=False):
     """low-level invoking with map ability"""
     # TODO: We actually have to json_serialize this.. somehows
     
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     
     map_limit = conn.map_job_limit
     map_count = 1
@@ -301,7 +301,7 @@ def invoke_map(label, **kwargs):
         All values with len(>1) must have same length
         Values need to be either file-like objects or json-encodable python objects         
         
-    Be aware that this is more limiting than regular cloud.map
+    Be aware that this is more limiting than regular scicloud.map
     -No more than 500 jobs
     -All of args will be read into memory before transport
     You will need to manually "chunk" maps if your arguments do not fit the above constraints

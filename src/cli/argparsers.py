@@ -5,9 +5,9 @@ from __future__ import absolute_import
 """
 Copyright (c) 2011 `PiCloud, Inc. <http://www.scivm.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -124,7 +124,7 @@ common_args = [
 
 ]               
 
-exec_parser = scivm_subparsers.add_parser('exec', description='Executes a program on PiCloud through the shell. This is the shell version of cloud.call',
+exec_parser = scivm_subparsers.add_parser('exec', description='Executes a program on PiCloud through the shell. This is the shell version of scicloud.call',
                                             help="Execute a program on PiCloud through the shell")
 exec_parser.add_argument('command', nargs=argparse.PARSER, help='Templated shell command to execute')
 exec_parser.add_argument('-d', '--data', dest='args', metavar='PARAMETER=VALUE', action='append', 
@@ -132,7 +132,7 @@ exec_parser.add_argument('-d', '--data', dest='args', metavar='PARAMETER=VALUE',
 for args, kwargs in common_args:
     exec_parser.add_argument(*args, **kwargs)
 
-mapexec_parser = scivm_subparsers.add_parser('mapexec', description='Executes many programs in parallel on PiCloud through the shell. This is the shell version of cloud.map. \
+mapexec_parser = scivm_subparsers.add_parser('mapexec', description='Executes many programs in parallel on PiCloud through the shell. This is the shell version of scicloud.map. \
 Number of programs will be determined by number of comma-seperated arguments provided to -n (--maparg)',
                                             help="Execute parallel programs on PiCloud through the shell")
 mapexec_parser.add_argument('command', nargs=argparse.PARSER, help='Templated Shell command to execute.')
@@ -272,13 +272,13 @@ files_put_parser = files_subparsers.add_parser('put', help='Store a file on PiCl
 files_put_parser.add_argument('source', help='Local path to file')
 files_put_parser.add_argument('name', default=None, help='Name for file to be stored on PiCloud')
 
-files_syncfromcloud_parser = files_subparsers.add_parser('sync-from-cloud', help='Download file if it does not exist locally or has changed')
-files_syncfromcloud_parser.add_argument('name', default=None, help='Name of file stored on PiCloud')
-files_syncfromcloud_parser.add_argument('destination', type=shell_path_post_op, help='Local path to save file to')
+files_syncfromscicloud_parser = files_subparsers.add_parser('sync-from-scicloud', help='Download file if it does not exist locally or has changed')
+files_syncfromscicloud_parser.add_argument('name', default=None, help='Name of file stored on PiCloud')
+files_syncfromscicloud_parser.add_argument('destination', type=shell_path_post_op, help='Local path to save file to')
 
-files_synctocloud_parser = files_subparsers.add_parser('sync-to-cloud', help='Upload file only if it does not exist on PiCloud or has changed')
-files_synctocloud_parser.add_argument('source', default=None, help='local path to file')
-files_synctocloud_parser.add_argument('name', default=None, help='Name for file to be stored on PiCloud')
+files_synctoscicloud_parser = files_subparsers.add_parser('sync-to-scicloud', help='Upload file only if it does not exist on PiCloud or has changed')
+files_synctoscicloud_parser.add_argument('source', default=None, help='local path to file')
+files_synctoscicloud_parser.add_argument('name', default=None, help='Name for file to be stored on PiCloud')
 
 """Bucket Parser"""
 bucket_parser = scivm_subparsers.add_parser('bucket', description="Module for managing bucket objects stored on PiCloud's key-value store",
@@ -332,17 +332,17 @@ bucket_put_parser.add_argument('obj_path', metavar='obj-path', default=None, hel
 bucket_put_parser.add_argument('-p', '--prefix', default=None, type=str,
                                help='If provided, prepend PREFIX/ to obj-path')
 
-bucket_syncfromcloud_parser = bucket_subparsers.add_parser('sync-from-cloud', help='Download bucket object only if it has changed')
-bucket_syncfromcloud_parser.add_argument('obj_path', metavar='obj-path', default=None, help='Name of bucket object in storage')
-bucket_syncfromcloud_parser.add_argument('file_path', metavar='file-path', type=shell_path_post_op, help='Local path to save bucket object to')
-bucket_syncfromcloud_parser.add_argument('-p', '--prefix', default=None, type=str,
+bucket_syncfromscicloud_parser = bucket_subparsers.add_parser('sync-from-scicloud', help='Download bucket object only if it has changed')
+bucket_syncfromscicloud_parser.add_argument('obj_path', metavar='obj-path', default=None, help='Name of bucket object in storage')
+bucket_syncfromscicloud_parser.add_argument('file_path', metavar='file-path', type=shell_path_post_op, help='Local path to save bucket object to')
+bucket_syncfromscicloud_parser.add_argument('-p', '--prefix', default=None, type=str,
                                          help='If provided, prepend PREFIX/ to obj-path')
 
 
-bucket_synctocloud_parser = bucket_subparsers.add_parser('sync-to-cloud', help='Upload bucket object only if it has changed')
-bucket_synctocloud_parser.add_argument('file_path', metavar='file-path', default=None, help='Local path to upload from')
-bucket_synctocloud_parser.add_argument('obj_path', metavar='obj-path', default=None, help='Name for bucket object to be stored on PiCloud')
-bucket_synctocloud_parser.add_argument('-p', '--prefix', default=None, type=str,
+bucket_synctoscicloud_parser = bucket_subparsers.add_parser('sync-to-scicloud', help='Upload bucket object only if it has changed')
+bucket_synctoscicloud_parser.add_argument('file_path', metavar='file-path', default=None, help='Local path to upload from')
+bucket_synctoscicloud_parser.add_argument('obj_path', metavar='obj-path', default=None, help='Name for bucket object to be stored on PiCloud')
+bucket_synctoscicloud_parser.add_argument('-p', '--prefix', default=None, type=str,
                                        help='If provided, prepend PREFIX/ to obj-path')
 
 
@@ -351,7 +351,7 @@ bucket_make_public_parser.add_argument('obj_path', metavar='obj-path', default=N
 bucket_make_public_parser.add_argument('-p', '--prefix', default=None, type=str,
                                        help='If provided, prepend PREFIX/ to obj-path')
 bucket_make_public_parser.add_argument('-d', '--header', dest='header_args', metavar='PARAMETER=VALUE', action='append', 
-                                       help='Customize headers that should in HTTP response. See Python docs on cloud.bucket.make_public')
+                                       help='Customize headers that should in HTTP response. See Python docs on scicloud.bucket.make_public')
 bucket_make_public_parser.add_argument('-r', '--reset-headers', action='store_true', default=False,
                                        help='Clear all custom HTTP Headers')
 
@@ -397,7 +397,7 @@ realtime_request_parser.add_argument('cores', type=int, help='The number of core
 volume_parser = scivm_subparsers.add_parser('volume', description='Module for managing volumes stored on PiCloud', help = "Manage volumes")
 volume_subparsers = volume_parser.add_subparsers(title='commands', dest='_command', help='command help')
 
-volume_list_parser = volume_subparsers.add_parser('list', help='List existing volumes', description='Lists existing cloud volumes')
+volume_list_parser = volume_subparsers.add_parser('list', help='List existing volumes', description='Lists existing scicloud volumes')
 volume_list_parser.add_argument('-n', '--name', nargs='+', help='Name(s) of volume to list')
 volume_list_parser.add_argument('-d', '--desc', action='store_true', default=False, help='Print volume description')
 
@@ -406,23 +406,23 @@ volume_create_parser.add_argument('name', help='Name of the volume to create (ma
 volume_create_parser.add_argument('mount_path', metavar='mount-path', help='Mount point (is relative then relative to /home/scivm) where jobs should expect this volume.')
 volume_create_parser.add_argument('-d', '--desc', default=None, help='Description of the volume (max 1024 chars)')
 
-volume_mkdir_parser = volume_subparsers.add_parser('mkdir', help='Create directory(ies) at cloud volume [path]')
+volume_mkdir_parser = volume_subparsers.add_parser('mkdir', help='Create directory(ies) at scicloud volume [path]')
 volume_mkdir_parser.add_argument('volume_path', metavar='volume-path', nargs='+', help='Cloud volume path where directory should be created')
 volume_mkdir_parser.add_argument('-p', '--parents', action='store_true', default=False, help='Make necessary parents')
 
-volume_sync_parser = volume_subparsers.add_parser('sync', help='Sync local directory to volume on PiCloud', description='Syncs a local path and a cloud volume.', formatter_class=argparse.RawDescriptionHelpFormatter,)
+volume_sync_parser = volume_subparsers.add_parser('sync', help='Sync local directory to volume on PiCloud', description='Syncs a local path and a scicloud volume.', formatter_class=argparse.RawDescriptionHelpFormatter,)
 volume_sync_parser.add_argument('source', nargs='+', help='Source path that should be synced')
 volume_sync_parser.add_argument('dest', help='Destination path that should be synced')
 volume_sync_parser.add_argument('-d', '--delete', action='store_true', help='Delete destination files that do not exist in source')
 
-volume_delete_parser = volume_subparsers.add_parser('delete', help='Delete a cloud volume')
-volume_delete_parser.add_argument('name', help='Name of the cloud volume to delete')
+volume_delete_parser = volume_subparsers.add_parser('delete', help='Delete a scicloud volume')
+volume_delete_parser.add_argument('name', help='Name of the scicloud volume to delete')
 
-volume_ls_parser = volume_subparsers.add_parser('ls', help='List the contents of a cloud volume [path]')
+volume_ls_parser = volume_subparsers.add_parser('ls', help='List the contents of a scicloud volume [path]')
 volume_ls_parser.add_argument('volume_path', metavar='volume-path', nargs='+', help='Cloud volume path whose contents should be shown')
 volume_ls_parser.add_argument('-l', '--extended-info', action='store_true', default=False, help='Use long listing format')
 
-volume_rm_parser = volume_subparsers.add_parser('rm', help='Remove contents from a cloud volume')
+volume_rm_parser = volume_subparsers.add_parser('rm', help='Remove contents from a scicloud volume')
 volume_rm_parser.add_argument('volume_path', metavar='volume-path', nargs='+', help='Cloud volume path whose contents should be removed')
 volume_rm_parser.add_argument('-r', '--recursive', action='store_true', default=False, help='Remove directories and their contents recursively')
 

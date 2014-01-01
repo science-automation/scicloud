@@ -3,9 +3,9 @@ Defines basic connection object
 
 Copyright (c) 2009 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -20,10 +20,10 @@ License along with this package; if not, see
 http://www.gnu.org/licenses/lgpl-2.1.html
 """
 
-from ..cloud import CloudException
+from ..scicloud import CloudException
 
 class CloudConnection(object):
-    """Abstract connection class to deal with low-level communication of cloud adapter"""
+    """Abstract connection class to deal with low-level communication of scicloud adapter"""
     
     _isopen = False
     _adapter = None
@@ -50,7 +50,7 @@ class CloudConnection(object):
         return self._adapter
     
     def needs_restart(self, **kwargs):
-        """Called to determine if the cloud must be restarted due to different connection parameters"""
+        """Called to determine if the scicloud must be restarted due to different connection parameters"""
         return False
     
     def job_add(self, params, logdata = None):

@@ -85,7 +85,7 @@ _scivm()
 					    if [[ "$cur" == -* ]]; then
 					    	cmds=$base_cmds					    
 					    else
-                        	cmds="get get-md5 delete list put sync-from-cloud sync-to-cloud"
+                        	cmds="get get-md5 delete list put sync-from-scicloud sync-to-scicloud"
                         fi
                         COMPREPLY=($(compgen -W "${cmds}" -- ${cur}))
                         return 0
@@ -106,13 +106,13 @@ _scivm()
 					    if [[ "$cur" == -* ]]; then
 					    	cmds=$base_cmds					    
 					    else
-                        	cmds="get get-md5 remove remove-prefix list put sync-from-cloud sync-to-cloud make-public make-private is-public"
+                        	cmds="get get-md5 remove remove-prefix list put sync-from-scicloud sync-to-scicloud make-public make-private is-public"
                         fi
                         COMPREPLY=($(compgen -W "${cmds}" -- ${cur}))
                         return 0
                 ;;
                 
-                put | sync-from-cloud) 
+                put | sync-from-scicloud) 
 					    if [[ "$prev2" != 'files' && "$prev2" != 'bucket' ]]; then # illegal..
 					    	return 0
 					    elif [[ "$cur" == -* ]]; then

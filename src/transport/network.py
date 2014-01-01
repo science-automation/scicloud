@@ -4,9 +4,9 @@ This module manages communication with the PiCloud server
 
 Copyright (c) 2010 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -36,12 +36,12 @@ from datetime import datetime
 
 from ..util import urllib2_file
 from ..util import credentials
-from ..cloud import CloudException
-from .. import cloudconfig as cc
+from ..scicloud import CloudException
+from .. import scicloudconfig as cc
 from .connection import CloudConnection
 
 import logging
-cloudLog = logging.getLogger('Cloud.HTTPConnection')
+scicloudLog = logging.getLogger('Cloud.HTTPConnection')
 
 try:
     from json import dumps as serialize
@@ -81,7 +81,7 @@ def unicode_container_to_str(data):
 
 class HttpConnection(CloudConnection):
     """
-    HTTPConnnection finds an available cloud cluster, and provides
+    HTTPConnnection finds an available scicloud cluster, and provides
     a gateway to query it.
     """
     
@@ -101,11 +101,11 @@ class HttpConnection(CloudConnection):
     if server_list_url == 'http://www.scivm.com/pyapi/servers/list/':
         server_list_url = __api_default_url
     
-    job_cache_size = cc.transport_configurable('cloud_status_cache_size',
+    job_cache_size = cc.transport_configurable('scicloud_status_cache_size',
                                   default=65536,
                                   comment="Number of job statuses to hold in local memory; set to 0 to disable caching. This option only applies when connected to PiCloud.")
     
-    result_cache_size = cc.transport_configurable('cloud_result_cache_size',
+    result_cache_size = cc.transport_configurable('scicloud_result_cache_size',
                                   default=4096,
                                   comment="Amount (in kb) of job results to hold in local memory; set to 0 to disable caching. This option only applies when connected to PiCloud.")
     
@@ -138,10 +138,10 @@ class HttpConnection(CloudConnection):
                                   default='',
                                   comment="Internal use only: hardcodes hostname.", hidden = True)
     
-    #used to track cloud graph for webview
+    #used to track scicloud graph for webview
     parent_jid = cc.transport_configurable('parent_jid',
                                   default=-1, #default must be an int for configs to work
-                                  comment="Internal use only: Tracks cloud graph for webview", hidden = True)
+                                  comment="Internal use only: Tracks scicloud graph for webview", hidden = True)
     if parent_jid < 0: #flag for None.  
         parent_jid = None
     
@@ -234,24 +234,24 @@ class HttpConnection(CloudConnection):
         
         for accesspoint in resp['servers']:
             try:
-                cloudLog.debug('Trying %s' % accesspoint)
+                scicloudLog.debug('Trying %s' % accesspoint)
                 # see if we can connect to the server
                 req = urllib2.Request(accesspoint)                    
                 resp = urllib2_file.urlopen(req, timeout = 30.0)
                 resp.read()
             except Exception:
-                cloudLog.info('Could not connect to %s', exc_info = True)
+                scicloudLog.info('Could not connect to %s', exc_info = True)
                 pass                        
             else:
                 self.url = str(accesspoint)
-                cloudLog.info('Connected to %s' % accesspoint)
+                scicloudLog.info('Connected to %s' % accesspoint)
                 if req.get_type() != 'https':
-                    cloudLog.warning('Connected over an insecure connection. Be sure that openssl and python-openssl are installed')
+                    scicloudLog.warning('Connected over an insecure connection. Be sure that openssl and python-openssl are installed')
                 break
         else:
             # if it could not establish a connection any of the listed servers
-            raise CloudException('HttpConnection.__init__: Could not find working cloud server at %s. Please contact PiCloud about this error' % datetime.utcnow(),
-                                 logger=cloudLog, status=503)        
+            raise CloudException('HttpConnection.__init__: Could not find working scicloud server at %s. Please contact PiCloud about this error' % datetime.utcnow(),
+                                 logger=scicloudLog, status=503)        
         
     def open(self, force_open=True):
         """open adapter
@@ -263,15 +263,15 @@ class HttpConnection(CloudConnection):
                 return
             
             if self.api_key == 'None' and not force_open:
-                cloudLog.debug('No api_key set: using dummy connection')
+                scicloudLog.debug('No api_key set: using dummy connection')
                 self.url = ''
                 return False
             
             if self.adapter:
                 #Cache configuration copying.
                 #0 implies no cache (which internally is None)                    
-                self.adapter.cloud.job_cache_size = self.job_cache_size if self.job_cache_size > 0 else None                
-                self.adapter.cloud.result_cache_size = self.result_cache_size*1024 \
+                self.adapter.scicloud.job_cache_size = self.job_cache_size if self.job_cache_size > 0 else None                
+                self.adapter.scicloud.result_cache_size = self.result_cache_size*1024 \
                     if self.result_cache_size > 0 else None
                     
                 if not self.adapter.opened:
@@ -311,7 +311,7 @@ class HttpConnection(CloudConnection):
             api_secretkey = self.api_secretkey
         else:
             api_secretkey = credentials.resolve_secretkey(self.api_key) #None if not resolved
-            if not api_secretkey: #fall back to secretkey in cloudconf (backwards compatibility)
+            if not api_secretkey: #fall back to secretkey in scicloudconf (backwards compatibility)
                 api_secretkey = self.__class__.api_secretkey
             if not api_secretkey or api_secretkey == 'None':
                 raise CloudException('HttpConnection: api_secretkey for key %s not found. Please run scivm setup' % self.api_key)
@@ -334,7 +334,7 @@ class HttpConnection(CloudConnection):
         
         return response
     
-    def send_request_helper(self, url, post_values=None, headers={}, raw_response=False, log_cloud_excp = True):
+    def send_request_helper(self, url, post_values=None, headers={}, raw_response=False, log_scicloud_excp = True):
         """Creates an http connection to the given url with the post_values encoded.
         Returns the http response if the returned status code is > 200."""
         
@@ -384,7 +384,7 @@ class HttpConnection(CloudConnection):
                     error = resp.get('error')
                     if error:
                         raise CloudException(error['msg'], status=error['code'], 
-                                         retry=error['retry'], logger=cloudLog)
+                                         retry=error['retry'], logger=scicloudLog)
                     
                     elif response.code > 300:  # 4xx error without an error_code in body; somnething is wrong 
                         raise response
@@ -408,11 +408,11 @@ class HttpConnection(CloudConnection):
                 
                 if not must_raise_exc:                    
                     if attempt <= self.retry_attempts:
-                        cloudLog.warn('rawquery: Problem connecting to PiCloud. Retrying. \nError is %s' % str(e))
-                        logfunc = cloudLog.warn    
+                        scicloudLog.warn('rawquery: Problem connecting to PiCloud. Retrying. \nError is %s' % str(e))
+                        logfunc = scicloudLog.warn    
                     else:
-                        cloudLog.exception('rawquery: http connection failed')
-                        logfunc = cloudLog.error
+                        scicloudLog.exception('rawquery: http connection failed')
+                        logfunc = scicloudLog.error
                     
                     # HTTP Error
                     if getattr(e, 'readlines', None):
@@ -432,11 +432,11 @@ class HttpConnection(CloudConnection):
                 # log error details
                 if attempt > self.retry_attempts or must_raise_exc:
                     if isinstance(e, CloudException):
-                        if log_cloud_excp:
-                            cloudLog.error('rawquery: received error from server: %s', e)
+                        if log_scicloud_excp:
+                            scicloudLog.error('rawquery: received error from server: %s', e)
                         raise
                     else:
-                        cloudLog.exception('rawquery: PiCloud appears to be unavailable. Showing traceback')
+                        scicloudLog.exception('rawquery: PiCloud appears to be unavailable. Showing traceback')
                         raise CloudException('PiCloud is unavailable. Please contact PiCloud with this message. Specific error:  %s - %s' % (datetime.utcnow(), e), 
                                              status=503)
                 else:
@@ -472,19 +472,19 @@ class HttpConnection(CloudConnection):
         return resp
         
     
-    def send_request(self, url, post_values, get_values=None, logfunc=cloudLog.info, raw_response=False, log_cloud_excp = True, auth=None):
+    def send_request(self, url, post_values, get_values=None, logfunc=scicloudLog.info, raw_response=False, log_scicloud_excp = True, auth=None):
         """High-level HTTP sending logic
         url -- url to communicate with
         post_values -- dictionary defining postdata
         get_values -- dictionary of items defining getdata (appended to url)
         logfunc -- function to be used for logging
         raw_response -- If true, do not parse body with 'parse_response'
-        log_cloud_excp -- If a cloudexception is received from server, should it be logged with logging.error
+        log_scicloud_excp -- If a scicloudexception is received from server, should it be logged with logging.error
         auth -- 2 element tuple defining username, password -- overrides api_key/api_secretkey if provided
         """  
         
         if not auth and self.api_key == 'None':
-            raise CloudException('HttpConnection.query: api_key is not set. Please run "scivm setup" or call cloud.setkey()', logger=cloudLog)
+            raise CloudException('HttpConnection.query: api_key is not set. Please run "scivm setup" or call scicloud.setkey()', logger=scicloudLog)
                 
         headers = {}
         
@@ -516,14 +516,14 @@ class HttpConnection(CloudConnection):
         
         try:
             return self.send_request_helper(url, post_values, headers, raw_response = raw_response, 
-                                        log_cloud_excp = log_cloud_excp)
+                                        log_scicloud_excp = log_scicloud_excp)
         except CloudException, ce:            
             if ce.status == 503: # network error
                 if self.serverlist_resolved_url:
                     self.resolve_by_serverlist() # re-resolve server list (or raise network diagnostic error)
                     # try again:
                     return self.send_request_helper(url, post_values, headers, raw_response = raw_response, 
-                                        log_cloud_excp = log_cloud_excp)
+                                        log_scicloud_excp = log_scicloud_excp)
                 else:
                     # try diagnosing network; raises custom exception if diag fails; otherwise continue on.
                     self.diagnose_network() 
@@ -545,7 +545,7 @@ class HttpConnection(CloudConnection):
                 
         params.setdefault('language', 'python') # allow parent to declare a different lang (e.g. shell)
         params['mod_versions'] = self._get_mod_versions() # module versions for tracking
-        params['cloud_version'] = release_version        
+        params['scicloud_version'] = release_version        
         
     
     def job_add(self, params, logdata=None):
@@ -571,11 +571,11 @@ class HttpConnection(CloudConnection):
         if params['depends_on']:
             params['depends_on'] = self.pack_jids(params['depends_on'])[0]
 
-        resp = self.send_request(self.call_query, params, logfunc=cloudLog.debug)
+        resp = self.send_request(self.call_query, params, logfunc=scicloudLog.debug)
         
         jid = resp['jids']
         
-        cloudLog.info('call %s --> jid [%s]', params['func_name'], jid)
+        scicloudLog.info('call %s --> jid [%s]', params['func_name'], jid)
         
         return jid
     
@@ -650,7 +650,7 @@ class HttpConnection(CloudConnection):
                 params['hostname'] = str(self.hostname)
                 params['ap_version'] = self.__ap_version
                 
-                resp = self.send_request(self.map_query, params, logfunc=cloudLog.debug) #actual query
+                resp = self.send_request(self.map_query, params, logfunc=scicloudLog.debug) #actual query
                 
                 if not map_is_done:
 
@@ -694,7 +694,7 @@ class HttpConnection(CloudConnection):
             
         jids = decode_maybe_xrange(resp['jids'])
         
-        cloudLog.info('map %s --> jids [%s]', fname, jids)
+        scicloudLog.info('map %s --> jids [%s]', fname, jids)
         
         return jids
     
@@ -714,7 +714,7 @@ class HttpConnection(CloudConnection):
         
         params['data'] = data.finish()
         
-        resp = self.send_request(self.map_reduce_query, params, logfunc=cloudLog.debug)
+        resp = self.send_request(self.map_reduce_query, params, logfunc=scicloudLog.debug)
         
         jid = resp['jids']
         
@@ -737,7 +737,7 @@ class HttpConnection(CloudConnection):
 
             packed_jids, serialized_jids = self.pack_jids(rjids)
             if not by_jid:
-                cloudLog.info('query result of jids %s' % serialized_jids) 
+                scicloudLog.info('query result of jids %s' % serialized_jids) 
 
             if by_jid:
                 resp = self.send_request(self.result_query_global, {'jids': packed_jids}, logfunc=None)
@@ -746,7 +746,7 @@ class HttpConnection(CloudConnection):
             
             # THINK: We could throw a warning if there is potentially a Python version incompatibility
             if resp['language'] != 'python':
-                raise CloudException('HttpConnection.jobs_result: Result data is not Python compatible because it was generated in %s.' % resp['language'], logger=cloudLog)
+                raise CloudException('HttpConnection.jobs_result: Result data is not Python compatible because it was generated in %s.' % resp['language'], logger=scicloudLog)
             
             data = resp['data']
             
@@ -771,18 +771,18 @@ class HttpConnection(CloudConnection):
         if jids == None:
             #send 'kill all' command to server, which is encoded as kill([])
             packed_jids = self.pack_jids([])[0]
-            cloudLog.info('kill all jobs')
+            scicloudLog.info('kill all jobs')
             self.send_request(self.kill_query, {'jids': packed_jids}, logfunc=None)
             
         for rjids in iterate_xrange_limit(jids,self.jid_size_limit):
             packed_jids, serialized_jids = self.pack_jids(rjids)
-            cloudLog.info('kill jids %s' % serialized_jids)
+            scicloudLog.info('kill jids %s' % serialized_jids)
             self.send_request(self.kill_query, {'jids': packed_jids}, logfunc=None)
 
     def jobs_delete(self, jids):
         for rjids in iterate_xrange_limit(jids,self.jid_size_limit):
             packed_jids, serialized_jids = self.pack_jids(rjids)
-            cloudLog.info('delete jids %s' % serialized_jids)
+            scicloudLog.info('delete jids %s' % serialized_jids)
             self.send_request(self.delete_query, {'jids':  packed_jids}, logfunc=None)
         
     def jobs_info(self, jids, info_requested):
@@ -792,7 +792,7 @@ class HttpConnection(CloudConnection):
             
             packed_jids, serialized_jids = self.pack_jids(rjids)        
             serialized_info = serialize(info_requested)
-            cloudLog.info('query [%s] on jids %s' % (serialized_info, serialized_jids)) 
+            scicloudLog.info('query [%s] on jids %s' % (serialized_info, serialized_jids)) 
             
             resp = self.send_request(self.info_query,
                                      post_values={'jids':  packed_jids},
@@ -836,9 +836,9 @@ class HttpConnection(CloudConnection):
         
         if 'ap_version' in resp:
             self.__ap_version = resp['ap_version']
-            #cloudLog.info("network.py: modules_check(): result['ap_version'] of query: %s" % resp['ap_version'])
+            #scicloudLog.info("network.py: modules_check(): result['ap_version'] of query: %s" % resp['ap_version'])
             
-        cloudLog.info('network.py: modules_check(): ap_version is now %s. needed mods are %s', 
+        scicloudLog.info('network.py: modules_check(): ap_version is now %s. needed mods are %s', 
                       self.__ap_version, mods)
         
         return mods
@@ -860,9 +860,9 @@ class HttpConnection(CloudConnection):
         
         if 'ap_version' in resp:
             self.__ap_version = resp['ap_version']
-            #cloudLog.info("network.py: modules_add(): result['ap_version'] of query: %s" % resp['ap_version'])
+            #scicloudLog.info("network.py: modules_add(): result['ap_version'] of query: %s" % resp['ap_version'])
             
-        cloudLog.info('network.py: modules_add(): ap_version is %s' % self.__ap_version)
+        scicloudLog.info('network.py: modules_add(): ap_version is %s' % self.__ap_version)
     
     
     def report_install(self):

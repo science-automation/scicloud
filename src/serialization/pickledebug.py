@@ -4,9 +4,9 @@ This provides an xml trace of a pickle
 
 Copyright (c) 2009 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -34,13 +34,13 @@ except ImportError:
     from StringIO import StringIO
 
 from . import xmlhandlers
-from .cloudpickle import CloudPickler
+from .scicloudpickle import CloudPickler
 from .. import util
 from ..util import islambda
-from .. import cloudconfig as cc
+from .. import scicloudconfig as cc
 
 import logging
-cloudLog = logging.getLogger("Cloud.Transport")
+scicloudLog = logging.getLogger("Cloud.Transport")
 
 class DebugPicklingError(pickle.PicklingError):
     def __init__(self, msg, xmltrace):        
@@ -88,7 +88,7 @@ class CloudDebugPickler(CloudPickler):
         try:
             CloudPickler.dump(self,obj)
         except PicklingError, p:            
-            cloudLog.exception("pickling failed on %s of type %s." 
+            scicloudLog.exception("pickling failed on %s of type %s." 
                            % (self.lastobj, type(self.lastobj)))
             strio = StringIO()                           
             

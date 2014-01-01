@@ -89,7 +89,7 @@ class ConcurrentRotatingFileHandler(BaseRotatingHandler):
     exceed the given size.
     """
     
-    #picloud:
+    #piscicloud:
     _disabled = False
     stream_lock = None
     

@@ -3,9 +3,9 @@ PiCloud configuration backend
 
 Copyright (c) 2010 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -34,7 +34,7 @@ extraInfo = {
              'Account': 'PiCloud account information. This is the only section that you need to worry about.',
              'Logging': 'Control what should be logged and where',
              'Transport': 'PiCloud information transfer',
-             'Multiprocessing': 'Options that control running the cloud locally',
+             'Multiprocessing': 'Options that control running the scicloud locally',
              'Simulation': 'Options for simulation mode that override Multiprocessing and Logging options'
         }
 
@@ -71,7 +71,7 @@ class ConfigManager(object):
                 except OSError:
                     pass
                 import types
-                self.backend = types.ModuleType('cloudconf')
+                self.backend = types.ModuleType('scicloudconf')
                 return False #force rewrite
             else:                    
                 try:
@@ -81,8 +81,8 @@ class ConfigManager(object):
                         self.backend = __import__(pyfile)
                 except ImportError, e:
                     import types
-                    sys.stderr.write('CLOUD ERROR: Malformed cloudconf.py:\n %s\nUsing default settings.\n' % str(e))
-                    self.backend = types.ModuleType('cloudconf')            
+                    sys.stderr.write('CLOUD ERROR: Malformed scicloudconf.py:\n %s\nUsing default settings.\n' % str(e))
+                    self.backend = types.ModuleType('scicloudconf')            
         finally:    
             if addedEntry:
                 sys.path.remove(dir)
@@ -145,8 +145,8 @@ class ConfigManager(object):
             fp.write("\n\n")
 
 class ConfigSettings(object):
-    """This object provides the ability to programmatically edit the cloud configuration (found in cloudconf.py).   
-    ``commit()`` must be called to update the cloud module with new settings - and restart all active clouds    
+    """This object provides the ability to programmatically edit the scicloud configuration (found in scicloudconf.py).   
+    ``commit()`` must be called to update the scicloud module with new settings - and restart all active sciclouds    
     """
     
     
@@ -158,7 +158,7 @@ class ConfigSettings(object):
         for f in files:
             if f.endswith('.py'):
                 endname = f[:-3]
-                if endname == 'cloudconfig' or endname == 'configmanager' or endname == 'setup' or endname == 'writeconfig' or endname == 'cli':                    
+                if endname == 'scicloudconfig' or endname == 'configmanager' or endname == 'setup' or endname == 'writeconfig' or endname == 'cli':                    
                     continue
                 if endname == '__init__':
                     delayed.append(prefix[:-1])  #do not load __init__ until submodules reloaded
@@ -211,31 +211,31 @@ class ConfigSettings(object):
         
     
     def commit(self):
-        """Update cloud with new settings.  
+        """Update scicloud with new settings.  
         
          .. warning::
             
-            This will restart any active cloud instances, wiping mp/simulated jobs and setkey information
+            This will restart any active scicloud instances, wiping mp/simulated jobs and setkey information
         """                
-        import cloud        
-        setattr(cloud,'__immutable', False)
-        cloud.cloudinterface._setcloud(cloud, type=None)
-        if hasattr(cloud,'mp'):
-            setattr(cloud.mp,'__immutable', False)
-            cloud.cloudinterface._setcloud(cloud.mp, type=None)
+        import scicloud        
+        setattr(scicloud,'__immutable', False)
+        scicloud.scicloudinterface._setscicloud(scicloud, type=None)
+        if hasattr(scicloud,'mp'):
+            setattr(scicloud.mp,'__immutable', False)
+            scicloud.scicloudinterface._setscicloud(scicloud.mp, type=None)
         
-        #Reload cloud modules in correct order
-        mods = cloud._modHook.mods[:]
+        #Reload scicloud modules in correct order
+        mods = scicloud._modHook.mods[:]
         
         for modstr in mods:
             mod = sys.modules.get(modstr)
-            if mod and modstr not in ['cloud.util.configmanager', 'cloud.cloudconfig']:
+            if mod and modstr not in ['scicloud.util.configmanager', 'scicloud.scicloudconfig']:
                 try:
                     reload(mod)
                 except ImportError:
                     pass       
-        reload(cloud)        
-        cloud._modHook.mods = mods #restore mods after it is wiped
+        reload(scicloud)        
+        scicloud._modHook.mods = mods #restore mods after it is wiped
         
     def __init__(self, confmanager, do_reload=False):
         backend = confmanager.backend
@@ -264,8 +264,8 @@ class ConfigSettings(object):
                 return getattr(backend, item)
             return __inner__
         
-        import cloud
-        ConfigSettings._loader(cloud.__path__[0] + os.sep ,'cloud.',do_reload)        
+        import scicloud
+        ConfigSettings._loader(scicloud.__path__[0] + os.sep ,'scicloud.',do_reload)        
         for options in confmanager.sections.values():
             for option in options:
                 prop = property(_get_prop(option), _set_prop(option), None, confmanager.optioncomment.get(ConfigManager.getCommentStr("",option)))

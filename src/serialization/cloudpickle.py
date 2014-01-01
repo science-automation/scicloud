@@ -10,9 +10,9 @@ It does not include an unpickler, as standard python unpickling suffices
 
 Copyright (c) 2009-2012 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -51,7 +51,7 @@ HAVE_ARGUMENT = chr(dis.HAVE_ARGUMENT)
 EXTENDED_ARG = chr(dis.EXTENDED_ARG)
 
 import logging
-cloudLog = logging.getLogger("Cloud.Transport")
+scicloudLog = logging.getLogger("Cloud.Transport")
 
 try:
     import ctypes
@@ -82,9 +82,9 @@ printMemoization = False
 useForcedImports = True # Should I use forced imports for tracking?      
 
 def error_msg(msg, loglevel=logging.WARN, exc_info = 0):
-    """Print an error message to pilog if running on cloud; otherwise send to stderr"""
-    from .. import _getcloud    
-    roc = _getcloud().running_on_cloud()
+    """Print an error message to pilog if running on scicloud; otherwise send to stderr"""
+    from .. import _getscicloud    
+    roc = _getscicloud().running_on_scicloud()
     if roc:
         pilog_module = __import__('pimployee.log', fromlist=['log'])
         pilog_module.pilogger.log(loglevel, msg, exc_info = exc_info)
@@ -227,7 +227,7 @@ class CloudPickler(pickle.Pickler):
             
             self.savedDjangoEnv = old_saved_django            
                 
-        if modname == 'cloud.shell':
+        if modname == 'scicloud.shell':
             # don't save django environment if we are using shell.exec
             self.savedDjangoEnv = True
         
@@ -240,7 +240,7 @@ class CloudPickler(pickle.Pickler):
             if django_settings:
                 django_mod = sys.modules.get(django_settings)
                 if django_mod:
-                    cloudLog.debug('Transporting django settings %s during save of %s', django_mod, name)
+                    scicloudLog.debug('Transporting django settings %s during save of %s', django_mod, name)
                     self.savedDjangoEnv = True
                     self.modules.add(django_mod)
                     write(pickle.MARK)
@@ -301,7 +301,7 @@ class CloudPickler(pickle.Pickler):
             #print 'forced imports are', forced_imports        
         
             # do not save our own references
-            forced_names = [m.__name__ for m in forced_imports if not m.__name__.startswith('cloud')]         
+            forced_names = [m.__name__ for m in forced_imports if not m.__name__.startswith('scicloud')]         
             save((forced_names,))
         
             #save((forced_imports,))
@@ -726,7 +726,7 @@ class CloudPickler(pickle.Pickler):
             if tst != '':
                 raise pickle.PicklingError("Cannot pickle file %s as it does not appear to map to a physical, real file" % name)
         elif fsize > SerializingAdapter.max_transmit_data:
-            raise pickle.PicklingError("Cannot pickle file %s as it exceeds cloudconf.py's max_transmit_data of %d" % 
+            raise pickle.PicklingError("Cannot pickle file %s as it exceeds scicloudconf.py's max_transmit_data of %d" % 
                                        (name,SerializingAdapter.max_transmit_data))
         else:            
             try:
@@ -835,7 +835,7 @@ def dumps(obj, protocol=2):
     cp = CloudPickler(file,protocol)
     cp.dump(obj)
     
-    #print 'cloud dumped', str(obj), str(cp.modules)
+    #print 'scicloud dumped', str(obj), str(cp.modules)
         
     return file.getvalue()
 

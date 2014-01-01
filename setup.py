@@ -141,7 +141,7 @@ if 'bdist_wininst' in sys.argv:
     rsync_dir = 'extra/rsync'
     rsync_files = [os.path.join(rsync_dir, f) for f in os.listdir(rsync_dir)]
     #rsync_install_dir = os.path.join(sys.prefix, 'lib', 'site-packages',
-    #                                 'scicloud', 'extras')
+    #                                 'sciscicloud', 'extras')
 
     data_files = [('scripts', [distribute_file_path]),
                   ('extras', rsync_files)]
@@ -209,7 +209,7 @@ if 'bdist_wininst' in sys.argv:
 requires.append('setuptools')
 
 dist = setup(
-    name='scicloud',
+    name='sciscicloud',
     version=release_version,  #defined by versioninfo.py exec
     description='Science VM client-side library',      
     author='Science Automation, Inc.',
@@ -218,9 +218,9 @@ dist = setup(
     install_requires=requires,
     license='GNU LGPL',
     long_description=open('README.txt').read(),
-    packages=['scicloud', 'scicloud.cli', 'scicloud.serialization', 'scicloud.transport', 'scicloud.util', 'scicloud.util.cloghandler', 'scicloud.shortcuts'],
-    package_dir = {'scicloud': os.path.join(basedir, 'src')},
-    package_data= {'scicloud.util.cloghandler' : ['README, PKG-INFO, LICENSE']}, 
+    packages=['sciscicloud', 'sciscicloud.cli', 'sciscicloud.serialization', 'sciscicloud.transport', 'sciscicloud.util', 'sciscicloud.util.cloghandler', 'sciscicloud.shortcuts'],
+    package_dir = {'sciscicloud': os.path.join(basedir, 'src')},
+    package_data= {'sciscicloud.util.cloghandler' : ['README, PKG-INFO, LICENSE']}, 
     platforms=['CPython 2.6', 'CPython 2.7'],      
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -235,7 +235,7 @@ dist = setup(
         'Topic :: System :: Distributed Computing',
         'Topic :: System :: Networking',
         ],
-    entry_points={'console_scripts': ['scivm = scicloud.cli.main:main',]},
+    entry_points={'console_scripts': ['scivm = sciscicloud.cli.main:main',]},
     data_files = data_files,
     scripts = scripts,
     options = options

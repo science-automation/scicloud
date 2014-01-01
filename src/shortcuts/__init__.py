@@ -1,12 +1,12 @@
 """
-The package cloud.shortcuts is a convenience package that holds functions and classes 
-that couple other cloud functions.
+The package scicloud.shortcuts is a convenience package that holds functions and classes 
+that couple other scicloud functions.
 
 Copyright (c) 2012 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -39,7 +39,7 @@ def get_connection_info(jid, port, protocol='tcp', timeout=None):
         {'address': 'ec2-23-22-210-36.compute-1.amazonaws.com',
          'port': '22000'}
      
-    Note that this function is an alias cloud.wait_for.port(jid, port, protocol, timeout) 
+    Note that this function is an alias scicloud.wait_for.port(jid, port, protocol, timeout) 
     """
     from .. import wait_for
     return wait_for.port(jid, port, protocol, timeout)

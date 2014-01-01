@@ -2,7 +2,7 @@
 Buckets is a key-value interface to store and retrieve data objects up to 5 GB in size.
 
 A full overview of the bucket interface may be found within PiCloud's 
-`documentation <http://docs.picloud.com/bucket.html>`_.
+`documentation <http://docs.piscicloud.com/bucket.html>`_.
 
 This module provides a python interface to your bucket.
 
@@ -15,7 +15,7 @@ In general, the various functions of this module use one or more of the followin
     obj_path="folder/file", prefix=""
 * ``file_path``: Refers to a path on the local file system.
 
-For convenience, in "copy" type functions (get, put, sync_to_cloud, etc.), the "destination" may be left 
+For convenience, in "copy" type functions (get, put, sync_to_scicloud, etc.), the "destination" may be left 
 blank. If so, the destination will be set to os.path.basename(source).
 (e.g. to upload, you need not put(file_path='foo', obj_path='foo'). put(file_path='foo') will suffice.)  
 
@@ -31,9 +31,9 @@ from __future__ import absolute_import
 """
 Copyright (c) 2012 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -72,10 +72,10 @@ from .transport.adapter import SerializingAdapter
 from .transport.network import HttpConnection
 from .util import  min_args, max_args
 from .util.zip_packer import Packer
-from .cloud import CloudException, CloudTimeoutError
-from cloud import _getcloudnetconnection, _getcloud
+from .scicloud import CloudException, CloudTimeoutError
+from scicloud import _getscicloudnetconnection, _getscicloud
 
-cloudLog = logging.getLogger('Cloud.bucket')
+scicloudLog = logging.getLogger('Cloud.bucket')
 
 S3_URL = 'https://s3.amazonaws.com/'
 _bucket_new_query = 'bucket/new/'
@@ -94,7 +94,7 @@ _bucket_public_url_folder_query = 'bucket/public_url_folder/'
 
 xml_chars = object # initialized on demand
 """
-The functions can be viewed as functionally close to instance methods of cloud.Cloud
+The functions can be viewed as functionally close to instance methods of scicloud.Cloud
 """
 
 def _post(conn, url, post_values, headers={}):
@@ -108,7 +108,7 @@ def _post(conn, url, post_values, headers={}):
     if post_values and 'success_action_redirect' in post_values:
         post_values['success_action_redirect'] = post_values['success_action_redirect'].decode('ascii', 'replace').encode('ascii', 'replace')
     
-    cloudLog.debug('post url %s with post_values=%s. headers=%s' % (url, post_values, headers))
+    scicloudLog.debug('post url %s with post_values=%s. headers=%s' % (url, post_values, headers))
     response =  conn.post(url, post_values, headers, use_gzip=False)
     
     return response
@@ -131,9 +131,9 @@ def _aws_retryable_post(conn, url, post_values, headers={}):
             
             attempt += 1            
             if attempt > retry_attempts:
-                cloudLog.exception('_aws_retryable_post: Cannot connect to AWS')
+                scicloudLog.exception('_aws_retryable_post: Cannot connect to AWS')
                 raise 
-            cloudLog.warn('_aws_retryable_post: Problem connecting to AWS. Retrying. \nError is %s' % str(e))
+            scicloudLog.warn('_aws_retryable_post: Problem connecting to AWS. Retrying. \nError is %s' % str(e))
             c = attempt -1 
             if (isinstance(e, socket.error) and getattr(e, 'errno', e.args[0]) == errno.ECONNREFUSED) or \
                 (isinstance(e, urllib2.HTTPError) and e.code in [500, 503]):
@@ -184,7 +184,7 @@ class CloudBucketObject(object):
         if self.__http_response:
             self.__http_response.close()
         self.__ticket['Range'] = 'bytes=%s-%s' % tuple(  [self.__pos, self.__end_byte]  )        
-        conn = _getcloudnetconnection()
+        conn = _getscicloudnetconnection()
         self.__http_response =  _aws_retryable_post(conn, self.__action, None, self.__ticket)
       
     def __protected_httpresp_op(self,op_name, *args, **kwargs):
@@ -203,7 +203,7 @@ class CloudBucketObject(object):
             except (SSLError, IOError):
                 if fail_num == max_fails - 1:
                     raise
-                cloudLog.info('Reconnecting to %s after failure %s at position %s',
+                scicloudLog.info('Reconnecting to %s after failure %s at position %s',
                               self.__action, fail_num, self.__pos)
 
                 time.sleep((1 << fail_num) * random.random())
@@ -322,11 +322,11 @@ def put(file_path, obj_path=None, prefix=None):
         
     Example::    
     
-        cloud.bucket.put('data/names.txt') 
+        scicloud.bucket.put('data/names.txt') 
     
     This will upload *data/names.txt* from the local filesystem to the PiCloud bucket 
     and store the object with the effective_obj_path *names.txt*. It can be later retrieved 
-    via cloud.bucket.get('names.txt')"""
+    via scicloud.bucket.get('names.txt')"""
     
     if obj_path is None:
         obj_path = os.path.basename(file_path)
@@ -361,7 +361,7 @@ def _validate_xml(s, entity_name):
             try: 
                 xml_chars = re.compile(u'[^\x09\x0A\x0D\u0020-\uD7FF\uE000-\uFFFD]', re.U)
             except Exception, e: # no idea?
-                cloudLog.warning('Could not generate xml regex', exc_info = True)
+                scicloudLog.warning('Could not generate xml regex', exc_info = True)
                 xml_chars = None
 
     elif xml_chars and xml_chars.search(uni_s):
@@ -421,7 +421,7 @@ def _putf(f, obj_path, prefix=None, content_type=None, content_encoding=None):
         from cStringIO import StringIO        
         f = StringIO(f)
     
-    conn = _getcloudnetconnection()         
+    conn = _getscicloudnetconnection()         
     
     try:
         #raise IOError
@@ -431,13 +431,13 @@ def _putf(f, obj_path, prefix=None, content_type=None, content_encoding=None):
         raise IOError('File object is not seekable. Cannot transmit')
     
     if fsize > 5000000000:
-        raise ValueError('Cannot store bucket objects larger than 5GB on cloud.bucket')
+        raise ValueError('Cannot store bucket objects larger than 5GB on scicloud.bucket')
     
     if fsize == 0:
         raise ValueError('Cannot store empty bucket objects')
     
     try:
-        cloudLog.debug('bucket object obj_path in client: %s' % full_obj_path)
+        scicloudLog.debug('bucket object obj_path in client: %s' % full_obj_path)
         # get a file ticket
         resp = conn.send_request(_bucket_new_query, {'name': full_obj_path,
                                                      'content-type' : content_type,
@@ -476,7 +476,7 @@ def putf(f, obj_path, prefix=None):
 
     return _putf(f, obj_path, prefix, content_type, content_encoding)
 
-def sync_to_cloud(file_path, obj_path=None, prefix=None):
+def sync_to_scicloud(file_path, obj_path=None, prefix=None):
     """
     Update bucket object if it has changed.
     
@@ -496,7 +496,7 @@ def sync_to_cloud(file_path, obj_path=None, prefix=None):
         remote_md5 = ''
     do_update = remote_md5 != local_md5
     
-    cloudLog.debug('remote_md5=%s. local_md5=%s. uploading? %s',
+    scicloudLog.debug('remote_md5=%s. local_md5=%s. uploading? %s',
                    remote_md5, local_md5, do_update
                    )
     if do_update:
@@ -523,7 +523,7 @@ def list(prefix=None, folderize=False, marker=None, max_keys=1000):
     Use *iterlist* to avoid truncation 
     """
     
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     
     if max_keys > 1000:
         max_keys = 1000
@@ -569,7 +569,7 @@ def iterlist(prefix=None, folderize=False, num_readahead_keys=1000):
 
 def exists(obj_path, prefix=None):
     """Return boolean indicating if PiCloud bucket object named ``effective_obj_path`` exists"""
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
         
     full_obj_path = _get_effective_obj_path(obj_path, prefix)
     resp = conn.send_request(_bucket_exists_query, {'name': full_obj_path})
@@ -583,7 +583,7 @@ def info(obj_path, prefix=None):
     and any headers set with ``make_public``      
     """
      
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
         
     full_obj_path = _get_effective_obj_path(obj_path, prefix)
     resp = conn.send_request(_bucket_info_query, {'name': full_obj_path})
@@ -594,11 +594,11 @@ def info(obj_path, prefix=None):
     return resp
 
 def _get_md5(obj_path, prefix=None, log_missing_file_error = True):
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     
     full_obj_path = _get_effective_obj_path(obj_path, prefix)
     resp = conn.send_request(_bucket_md5_query, {'name': full_obj_path},
-                             log_cloud_excp = log_missing_file_error)
+                             log_scicloud_excp = log_missing_file_error)
     md5sum = resp['md5sum']
     
     if '-' in md5sum: # multipart; can't rely on md5
@@ -617,7 +617,7 @@ def remove(obj_paths, prefix=None):
     
     obj_paths can be a single object or a list of objects
     """
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     
     if not hasattr(obj_paths, '__iter__'):
         obj_paths = [obj_paths]
@@ -676,9 +676,9 @@ def make_public(obj_path, prefix=None, headers={}, reset_headers = False):
     setting ``reset_headers`` to True 
     
     .. note:: Default content-type and content-encoding are inferred during the original 
-        cloud.bucket.put(..) call from the ``file_path`` and ``obj_path``.     
+        scicloud.bucket.put(..) call from the ``file_path`` and ``obj_path``.     
     """
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     
     full_obj_path = _get_effective_obj_path(obj_path, prefix)
     post_values = {'name' : full_obj_path,
@@ -698,7 +698,7 @@ def public_url_folder():
     e.g. object 'foo' (if is_public) will be found at
         public_url_folder() + foo
     """
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     resp = conn.send_request(_bucket_public_url_folder_query, {})
     return S3_URL+resp['url']
     
@@ -708,7 +708,7 @@ def is_public(obj_path, prefix=None):
     
     Return public URL if it is; otherwise False    
     """
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     
     full_obj_path = _get_effective_obj_path(obj_path, prefix)
     resp = conn.send_request(_bucket_is_public_query, {'name': full_obj_path})
@@ -721,7 +721,7 @@ def is_public(obj_path, prefix=None):
     
 def make_private(obj_path, prefix=None):
     """Removes the public URL associated with the PiCloud bucket object ``effective_obj_path``"""
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     
     full_obj_path = _get_effective_obj_path(obj_path, prefix)
     resp = conn.send_request(_bucket_make_private_query, {'name': full_obj_path})
@@ -752,7 +752,7 @@ def get(obj_path, file_path=None, prefix=None, start_byte=0, end_byte=None, _ret
         
     Example::    
     
-        cloud.bucket.get('names.txt','data/names.txt') 
+        scicloud.bucket.get('names.txt','data/names.txt') 
     
     This will retrieve the *names.txt* bucket object from PiCloud and save it locally to 
     *data/names.txt*. 
@@ -767,15 +767,15 @@ def get(obj_path, file_path=None, prefix=None, start_byte=0, end_byte=None, _ret
     
     file_path = _ready_file_path(file_path, obj_path)    
 
-    cloud_file = getf(obj_path, prefix, start_byte, end_byte)
-    remote_md5 = cloud_file.md5
+    scicloud_file = getf(obj_path, prefix, start_byte, end_byte)
+    remote_md5 = scicloud_file.md5
     
     chunk_size = 64000
     
     f = open(file_path, 'wb')
     
     while True:
-        data = cloud_file.read(chunk_size)
+        data = scicloud_file.read(chunk_size)
         if not data:
             break
         f.write(data)
@@ -790,14 +790,14 @@ def get(obj_path, file_path=None, prefix=None, start_byte=0, end_byte=None, _ret
         
         if hex_md5 != remote_md5:
             msg = 'Local MD5 %s did not match remote MD5 %s for %s' % (hex_md5, remote_md5, file_path)
-            cloudLog.error(msg)
+            scicloudLog.error(msg)
             if _retries > 0:
                 return get(obj_path, file_path, prefix, start_byte, end_byte, _retries - 1)
                 
             raise RuntimeError(msg)
     
     
-def sync_from_cloud(obj_path, file_path=None, prefix=None):
+def sync_from_scicloud(obj_path, file_path=None, prefix=None):
     """ 
     Download bucket object if it has changed.
     
@@ -819,7 +819,7 @@ def sync_from_cloud(obj_path, file_path=None, prefix=None):
             remote_md5 = ''
     
         do_update = remote_md5 != local_md5
-        cloudLog.debug('remote_md5=%s. local_md5=%s. downloading? %s',
+        scicloudLog.debug('remote_md5=%s. local_md5=%s. downloading? %s',
                        remote_md5, local_md5, do_update)
     if do_update:
         get(obj_path, file_path, prefix)
@@ -870,7 +870,7 @@ def mpsafe_get(obj_path, file_path=None, prefix=None, start_byte=0, end_byte=Non
     if not fsize: # download
         get(obj_path, file_path, prefix, start_byte, end_byte)
     elif do_sync:
-        sync_from_cloud(obj_path, file_path, prefix)         
+        sync_from_scicloud(obj_path, file_path, prefix)         
     
     fobj.close()  # releases lock
              
@@ -890,7 +890,7 @@ def getf(obj_path, prefix=None, start_byte=0, end_byte=None):
     """    
     
     full_obj_path = _get_effective_obj_path(obj_path, prefix)
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
 
     resp = conn.send_request(_bucket_get_query, {'name': full_obj_path})
     
@@ -904,7 +904,7 @@ def getf(obj_path, prefix=None, start_byte=0, end_byte=None):
     if file_size and (not end_byte or end_byte > file_size):
         end_byte = file_size
 
-    cloud_file = CloudBucketObject( params['action'], ticket, file_size, start_byte, end_byte )
+    scicloud_file = CloudBucketObject( params['action'], ticket, file_size, start_byte, end_byte )
     
-    return cloud_file
+    return scicloud_file
 

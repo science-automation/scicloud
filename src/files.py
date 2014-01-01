@@ -1,5 +1,5 @@
 """
-DEPRECATED: Please use cloud.bucket
+DEPRECATED: Please use scicloud.bucket
 
 For managing files on Science VM's S3 store.
 
@@ -15,9 +15,9 @@ from __future__ import absolute_import
 """
 Copyright (c) 2011 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -51,10 +51,10 @@ from .transport.adapter import SerializingAdapter
 from .transport.network import HttpConnection
 from .util import  min_args, max_args
 from .util.zip_packer import Packer
-from .cloud import CloudException
-from cloud import _getcloudnetconnection, _getcloud
+from .scicloud import CloudException
+from scicloud import _getscicloudnetconnection, _getscicloud
 
-cloudLog = logging.getLogger('Cloud.files')
+scicloudLog = logging.getLogger('Cloud.files')
 
 _file_new_query = 'file/new/'
 _file_put_query = 'file/put/'
@@ -67,7 +67,7 @@ _filemap_job_query = 'job/filemap/'
 _default_chunk_size = 200
 
 """
-This module utilizes the cloud object extensively
+This module utilizes the scicloud object extensively
 The functions can be viewed as instance methods of the Cloud (hence accessing of protected variables)
 """
 
@@ -82,7 +82,7 @@ def _post(conn, url, post_values, headers={}):
     if post_values and 'success_action_redirect' in post_values:
         post_values['success_action_redirect'] = post_values['success_action_redirect'].decode('ascii', 'replace').encode('ascii', 'replace')
     
-    cloudLog.debug('post url %s with post_values=%s. headers=%s' % (url, post_values, headers))
+    scicloudLog.debug('post url %s with post_values=%s. headers=%s' % (url, post_values, headers))
     response =  conn.post(url, post_values, headers, use_gzip=False)
     
     return response
@@ -100,9 +100,9 @@ def _aws_retryable_post(conn, url, post_values, headers={}):
             
             attempt += 1            
             if attempt > retry_attempts:
-                cloudLog.exception('_aws_retryable_post: Cannot connect to AWS')
+                scicloudLog.exception('_aws_retryable_post: Cannot connect to AWS')
                 raise 
-            cloudLog.warn('_aws_retryable_post: Problem connecting to AWS. Retrying. \nError is %s' % str(e))
+            scicloudLog.warn('_aws_retryable_post: Problem connecting to AWS. Retrying. \nError is %s' % str(e))
             c = attempt -1 
             if (isinstance(e, socket.error) and getattr(e, 'errno', e.args[0]) == errno.ECONNREFUSED) or \
                 (isinstance(e, urllib2.HTTPError) and e.code in [500, 503]):
@@ -241,11 +241,11 @@ def put(source, name=None):
     
     Example::    
     
-        cloud.files.put('data/names.txt') 
+        scicloud.files.put('data/names.txt') 
     
     This will transfer the file from the local path 'data/names.txt'
     to PiCloud and store it as 'names.txt'.
-    It can be later retrieved via cloud.files.get('names.txt')"""
+    It can be later retrieved via scicloud.files.get('names.txt')"""
 
     if not name:
         name = os.path.basename(source)
@@ -285,9 +285,9 @@ def putf(f, name):
             pass
     
     if fsize > 5000000000:
-        raise ValueError('Cannot store files larger than 5GB on cloud.files')
+        raise ValueError('Cannot store files larger than 5GB on scicloud.files')
     
-    conn = _getcloudnetconnection()         
+    conn = _getscicloudnetconnection()         
     
     try:
         # get a file ticket
@@ -308,10 +308,10 @@ def putf(f, name):
     finally:
         f.close()
 
-def sync_to_cloud(source, name=None):
+def sync_to_scicloud(source, name=None):
     """Upload file if it has changed.
     
-    cloud.files.put(source,name) 
+    scicloud.files.put(source,name) 
     only if contents of local file (specified by *source*)
     differ from those on PiCloud (specified by *name* or basename(*source*))
     (or if file does not exist on PiCloud)"""
@@ -327,7 +327,7 @@ def sync_to_cloud(source, name=None):
         remote_md5 = ''
     
     do_update = remote_md5 != local_md5
-    cloudLog.debug('remote_md5=%s. local_md5=%s. uploading? %s',
+    scicloudLog.debug('remote_md5=%s. local_md5=%s. uploading? %s',
                    remote_md5, local_md5, do_update
                    )
     if do_update:
@@ -336,7 +336,7 @@ def sync_to_cloud(source, name=None):
 def list():
     """List all files stored on PiCloud."""
     
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
 
     resp = conn.send_request(_file_list_query, {})
     files = resp['files']
@@ -347,14 +347,14 @@ def _file_info(name):
     """
     get information about name
     """
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     
     resp = conn.send_request(_file_exists_query, {'name':name})
     return resp
 
 def exists(name):
     """Check if a file named ``name`` is stored on PiCloud."""
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
         
     resp = conn.send_request(_file_exists_query, {'name': name})
     exists = resp['exists']
@@ -362,15 +362,15 @@ def exists(name):
 
 def get_md5(name, log_missing_file_error = True):
     """Return the md5 checksum of the file named ``name`` stored on PiCloud"""
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     resp = conn.send_request(_file_md5_query, {'name': name},
-                             log_cloud_excp = log_missing_file_error)
+                             log_scicloud_excp = log_missing_file_error)
     md5sum = resp['md5sum']
     return md5sum
     
 def delete(name):
     """Deletes the file named ``name`` from PiCloud."""
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
 
     resp = conn.send_request(_file_delete_query, {'name': name})
     deleted = resp['deleted']
@@ -382,7 +382,7 @@ def get(name, destination=None, start_byte=0, end_byte=None):
         
     Example::    
     
-        cloud.files.get('names.txt','data/names.txt') 
+        scicloud.files.get('names.txt','data/names.txt') 
     
     This will retrieve the 'names.txt' file on PiCloud and save it locally to 
     'data/names.txt'. 
@@ -399,13 +399,13 @@ def get(name, destination=None, start_byte=0, end_byte=None):
     if not destination:
         destination = name
         
-    cloud_file = getf(name, start_byte, end_byte)
+    scicloud_file = getf(name, start_byte, end_byte)
     
     chunk_size = 64000
     f = open(destination, 'wb')
     
     while True:
-        data = cloud_file.read(chunk_size)
+        data = scicloud_file.read(chunk_size)
         if not data:
             break
         f.write(data)
@@ -413,10 +413,10 @@ def get(name, destination=None, start_byte=0, end_byte=None):
     f.close()
 
     
-def sync_from_cloud(name, destination=None):
+def sync_from_scicloud(name, destination=None):
     """Download file if it has changed.
     
-    cloud.files.get(name,destination) 
+    scicloud.files.get(name,destination) 
     only if contents of local file (specified by *destination* or basename(*name))
     differ from those on PiCloud (specified by *name*) 
     (or *destination* does not exist locally)"""
@@ -436,7 +436,7 @@ def sync_from_cloud(name, destination=None):
             remote_md5 = ''
     
         do_update = remote_md5 != local_md5
-        cloudLog.debug('remote_md5=%s. local_md5=%s. downloading? %s',
+        scicloudLog.debug('remote_md5=%s. local_md5=%s. downloading? %s',
                        remote_md5, local_md5, do_update)
     if do_update:
         get(name, destination)
@@ -452,7 +452,7 @@ def getf(name, start_byte=0, end_byte=None):
     An end_byte of None or exceeding file size is interpretted as end of file
     """    
     
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
 
     resp = conn.send_request(_file_get_query, {'name': name})
     
@@ -476,9 +476,9 @@ def getf(name, start_byte=0, end_byte=None):
 
     resp =  _aws_retryable_post(conn, params['action'], None, ticket)
     
-    cloud_file = CloudFile( resp, file_size, start_byte, end_byte )
+    scicloud_file = CloudFile( resp, file_size, start_byte, end_byte )
     
-    return cloud_file
+    return scicloud_file
 
 
 def default_record_reader(delimiter):
@@ -583,7 +583,7 @@ def _reducer_wrapper(reducer):
 
 def map(name, mapper, chunk_size=None, record_reader=None, combiner=None, reducer=None, **kwargs):
     """
-    With map, you can process a file stored in cloud.files in parallel. The
+    With map, you can process a file stored in scicloud.files in parallel. The
     parallelism is achieved by dividing the file specified by *name* into
     chunks of size *chunk_size* (bytes). Each chunk is assigned a sub job. The
     sub job in turn processes just that chunk, allowing for the entire file to
@@ -595,7 +595,7 @@ def map(name, mapper, chunk_size=None, record_reader=None, combiner=None, reduce
     
     Map will return a single job IDentifier (jid). The sub jobs that comprise it
     do not have identifiers and, therefore, cannot be accessed directly.
-    cloud.info(jid), however, will show you information for relevant sub jobs.
+    scicloud.info(jid), however, will show you information for relevant sub jobs.
     
     By default, each chunk is split into records (of 0 or more characters) using
     newlines as delimiters. If *record_reader* is specified as a string, each
@@ -615,7 +615,7 @@ def map(name, mapper, chunk_size=None, record_reader=None, combiner=None, reduce
             yield record
     
     When no *combiner* or *reducer* is specified, the return value of the
-    cloud.files.map job will be roughly equivalent to::
+    scicloud.files.map job will be roughly equivalent to::
             
             map(mapper, record_reader(file_contents))
     
@@ -625,7 +625,7 @@ def map(name, mapper, chunk_size=None, record_reader=None, combiner=None, reduce
     *reducer* will result in the creation of one additional sub job. The reducer
     sub job grabs the results of each mapper sub job (iterators), combines them
     into a single iterator, and then passes that iterator into your *reducer*
-    function. The return value of the cloud.files.map job will be the iterator
+    function. The return value of the scicloud.files.map job will be the iterator
     returned by the *reducer*.
     
     A *combiner*, like a *reducer*, takes in an iterable of values and returns an
@@ -642,10 +642,10 @@ def map(name, mapper, chunk_size=None, record_reader=None, combiner=None, reduce
         def wordcount_reducer(wordcounts):
             yield sum(wordcounts)
             
-        jid = cloud.files.map('example_document', wordcount_mapper, reducer=wordcount_reducer)
+        jid = scicloud.files.map('example_document', wordcount_mapper, reducer=wordcount_reducer)
         
     Result::
-        cloud.result(jid)
+        scicloud.result(jid)
             >> [# of words]
     
     For advanced users, *record_reader* can also be specified as a function that
@@ -684,7 +684,7 @@ def map(name, mapper, chunk_size=None, record_reader=None, combiner=None, reduce
             The map function will always be serialized by the enhanced serializer, with debugging features.
             Possible values keyword are:
                         
-            0. default -- use cloud module's enhanced serialization and debugging info            
+            0. default -- use scicloud module's enhanced serialization and debugging info            
             1. no debug -- Disable all debugging features for arguments            
             2. use cPickle -- Use python's fast serializer, possibly causing PicklingErrors                
         * _kill_process:
@@ -724,12 +724,12 @@ def map(name, mapper, chunk_size=None, record_reader=None, combiner=None, reduce
                 See http://www.scivm.com/pricing/ for pricing information
     """
     
-    cloud_obj = _getcloud()
-    params = cloud_obj._getJobParameters(mapper, kwargs)    # takes care of kwargs
+    scicloud_obj = _getscicloud()
+    params = scicloud_obj._getJobParameters(mapper, kwargs)    # takes care of kwargs
     
     file_details = _file_info(name)
     if not file_details['exists']:
-        raise ValueError('file does not exist on the cloud, or is not yet ready to be accessed')
+        raise ValueError('file does not exist on the scicloud, or is not yet ready to be accessed')
     file_size = int( file_details['size'] )
     params['file_name'] = name
     
@@ -766,7 +766,7 @@ def map(name, mapper, chunk_size=None, record_reader=None, combiner=None, reduce
 
     func_to_be_sent = _mapper_combiner_wrapper(mapper, name, file_size, record_reader, combiner)
     
-    sfunc, sarg, logprefix, logcnt = cloud_obj.adapter.cloud_serialize( func_to_be_sent, 
+    sfunc, sarg, logprefix, logcnt = scicloud_obj.adapter.scicloud_serialize( func_to_be_sent, 
                                                                     params['fast_serialization'], 
                                                                     [], 
                                                                     logprefix='mapreduce.' )
@@ -779,14 +779,14 @@ def map(name, mapper, chunk_size=None, record_reader=None, combiner=None, reduce
     if reducer:
         _validate_arguments(reducer, 'reducer')
         reducer = _reducer_wrapper(reducer)
-        s_reducer, red_sarg, red_logprefix, red_logcnt = cloud_obj.adapter.cloud_serialize( reducer, params['fast_serialization'], [], logprefix='mapreduce.reducer.' )
+        s_reducer, red_sarg, red_logprefix, red_logcnt = scicloud_obj.adapter.scicloud_serialize( reducer, params['fast_serialization'], [], logprefix='mapreduce.reducer.' )
         data_red = Packer()
         data_red.add(s_reducer)
         params['data_red'] = data_red.finish()
         
-    conn = _getcloudnetconnection()
+    conn = _getscicloudnetconnection()
     conn._update_params(params)
-    cloud_obj.adapter.dep_snapshot()
+    scicloud_obj.adapter.dep_snapshot()
     
     resp = conn.send_request(_filemap_job_query, params)
     

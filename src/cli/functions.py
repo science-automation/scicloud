@@ -5,9 +5,9 @@ Functions wrap PiCloud calls
 """
 Copyright (c) 2012 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -44,14 +44,14 @@ from subprocess import Popen, PIPE
 # TODO: Must move this out of CLI into shell-exec.....
 from .. import shell
 from .. import bucket
-from .. import _getcloud
-from ..cloud import CloudException
+from .. import _getscicloud
+from ..scicloud import CloudException
 from ..util import template, OrderedDict
 from ..util.xrange_helper import PiecewiseXrange, maybe_xrange_iter
 from ..rest import _invoke
 
 import logging
-cloudLog = logging.getLogger('Cloud.functions')
+scicloudLog = logging.getLogger('Cloud.functions')
 
 def _gen_shell_kwargs(extra_args):
     kwargs = {}
@@ -67,14 +67,14 @@ def _gen_shell_kwargs(extra_args):
 def execute(command, args, return_file, ignore_exit_status, cwd=None, **kwargs):
     command = ' '.join(command)
     
-    #return cloud.call(execute_program, command)
+    #return scicloud.call(execute_program, command)
     arg_dct = template.extract_args(args, allow_map = False)
     kwargs = _gen_shell_kwargs(kwargs)
     
     jid = shell.execute(command, arg_dct, return_file, ignore_exit_status, cwd, **kwargs)
     
-    cloud = _getcloud()
-    if cloud.adapter.connection.is_simulated(): # on simulation wait for job to complete
+    scicloud = _getscicloud()
+    if scicloud.adapter.connection.is_simulated(): # on simulation wait for job to complete
         return result(str(jid))
     else:  # only return jid when not simulating
         return jid
@@ -123,8 +123,8 @@ def execute_map(command, args, mapargs, argfiles, duplicates,
     
     jids = shell.execute_map(command, arg_dct, maparg_dct, return_file, 
                              ignore_exit_status, cwd, **kwargs)
-    cloud = _getcloud()
-    if cloud.adapter.connection.is_simulated(): # on simulation wait for job to complete
+    scicloud = _getscicloud()
+    if scicloud.adapter.connection.is_simulated(): # on simulation wait for job to complete
         return result('%s-%s' % (jids[0], jids[-1]))
     else:  # only return jid when not simulating
         if isinstance(jids, xrange):
@@ -186,16 +186,16 @@ def bucket_make_public(obj_path, prefix, header_args, reset_headers):
 """ todo: kill, status, etc. on formatted jids"""
 def status(jids):
     jids = parse_jids(jids)
-    cloud = _getcloud()
-    statuses = cloud.status(jids)
+    scicloud = _getscicloud()
+    statuses = scicloud.status(jids)
     # encode answers with dct
     out_dct = OrderedDict(((jid, status) for jid, status in izip(jids.my_iter(), statuses)))
     return out_dct
 
 def join(jids, timeout=None):
     jids = parse_jids(jids)
-    cloud = _getcloud()
-    return cloud.join(jids,timeout)    
+    scicloud = _getscicloud()
+    return scicloud.join(jids,timeout)    
 
 class _JSON_String(str):
     json_encoded = True
@@ -205,8 +205,8 @@ class _JSON_String(str):
 
 def result(jids, timeout=None, ignore_errors=False): 
     jids = parse_jids(jids)
-    cloud = _getcloud()
-    results = cloud.result(jids, timeout, ignore_errors)
+    scicloud = _getscicloud()
+    results = scicloud.result(jids, timeout, ignore_errors)
     result_dct = OrderedDict()
     for jid, result in izip(maybe_xrange_iter(jids), results):
         if isinstance(result, CloudException):
@@ -229,18 +229,18 @@ def info(jids, info_requested=None):
     jids = parse_jids(jids)
     if info_requested:
         info_requested = info_requested.split(',')
-    cloud = _getcloud()
-    return cloud.info(jids, info_requested)    
+    scicloud = _getscicloud()
+    return scicloud.info(jids, info_requested)    
 
 def kill(jids):
     jids = parse_jids(jids)
-    cloud = _getcloud()
-    return cloud.kill(jids)    
+    scicloud = _getscicloud()
+    return scicloud.kill(jids)    
 
 def delete(jids):
     jids = parse_jids(jids)
-    cloud = _getcloud()
-    return cloud.delete(jids)    
+    scicloud = _getscicloud()
+    return scicloud.delete(jids)    
 
 def parse_jids(jid_str):
     """Parse jid a-b,c format (same as used for rest"""        
@@ -289,16 +289,16 @@ def exec_shell(timeout=None, keep_alive=False, **kwargs):
     kwargs['_priority'] = 1 
     kwargs['_restartable'] = False
         
-    cloud, params = shell._get_cloud_and_params('', kwargs)
+    scicloud, params = shell._get_scicloud_and_params('', kwargs)
     params['func_name'] = '<ssh session>'
     
-    jid = cloud.adapter.job_call(params, ssh_server_job, (keep_alive,), {})
+    jid = scicloud.adapter.job_call(params, ssh_server_job, (keep_alive,), {})
     
     print 'Job requested as jid %s. SSHing in..' % jid
         
     try:
         ssh(jid, timeout)    
     except Exception:
-        cloud.kill(jid)
+        scicloud.kill(jid)
         raise
 

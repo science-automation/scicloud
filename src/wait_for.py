@@ -10,9 +10,9 @@ Return value/exception handling is function specific
 
 Copyright (c) 2012 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -29,9 +29,9 @@ http://www.gnu.org/licenses/lgpl-2.1.html
 
 import time as _time
 
-from .cloud import CloudException as _CloudException
-from .cloud import CloudTimeoutError as _CloudTimeoutError
-from . import _getcloud
+from .scicloud import CloudException as _CloudException
+from .scicloud import CloudTimeoutError as _CloudTimeoutError
+from . import _getscicloud
 
 
 def _wait_for_test(jid, test_func, timeout=None, timeout_msg='Job wait timed out'):
@@ -88,7 +88,7 @@ def status(jid, test_status, timeout=None):
     """
     _checkint(jid, 'jid')
     def status_test(jid):
-        cl = _getcloud()
+        cl = _getscicloud()
         cur_status = cl.status(jid)
         if test_status == cur_status:
             return cur_status
@@ -106,14 +106,14 @@ def port(jid, port, protocol='tcp', timeout=None):
     for listening.
     Returns port translation dictionary. 
     
-    See docstring for :func:`cloud.shortcuts.get_connection_info` for description
+    See docstring for :func:`scicloud.shortcuts.get_connection_info` for description
     of returned dictionary
     """
     
     _checkint(jid, 'jid')
     _checkint(port, 'port')
 
-    cl = _getcloud()
+    cl = _getscicloud()
         
     processing_poll_interval = 1.0 # polling on status wait
     port_poll_interval = 0.7 # polling on port wait

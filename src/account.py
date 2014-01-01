@@ -7,9 +7,9 @@ from __future__ import absolute_import
 """
 Copyright (c) 2011 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -24,7 +24,7 @@ License along with this package; if not, see
 http://www.gnu.org/licenses/lgpl-2.1.html    
 """
 
-import cloud
+import scicloud
 
 _key_list = 'key/list/'
 _key_get = 'key/%s/'
@@ -37,7 +37,7 @@ def list_keys(username, password, active_only=False):
     active keys are returned. *username* and *password* should be your
     PiCloud login information."""
     
-    conn = cloud._getcloudnetconnection()
+    conn = scicloud._getscicloudnetconnection()
     resp = conn.send_request(_key_list,
                              {},
                              get_values={'active_only': active_only},
@@ -50,7 +50,7 @@ def get_key(username, password, api_key):
     note for the specified *api_key*. *username* and *password* should
     be your PiCloud login information."""
     
-    conn = cloud._getcloudnetconnection()
+    conn = scicloud._getscicloudnetconnection()
     resp = conn.send_request(_key_get % api_key,
                              {},
                              auth=(username, password))
@@ -63,7 +63,7 @@ def activate_key(username, password, api_key):
     """Activates the specified *api_key*. *username* and *password*
     should be your PiCloud login information."""
     
-    conn = cloud._getcloudnetconnection()
+    conn = scicloud._getscicloudnetconnection()
     resp = conn.send_request(_key_activate % api_key,
                              {},
                              auth=(username, password))
@@ -74,7 +74,7 @@ def deactivate_key(username, password, api_key):
     """Deactivates the specified *api_key*. *username* and *password*
     should be your PiCloud login information."""
     
-    conn = cloud._getcloudnetconnection()
+    conn = scicloud._getscicloudnetconnection()
     resp = conn.send_request(_key_deactivate % api_key,
                              {},
                              auth=(username, password))
@@ -85,7 +85,7 @@ def create_key(username, password):
     """Creates a new api_key. *username* and *password*
     should be your PiCloud login information."""
     
-    conn = cloud._getcloudnetconnection()
+    conn = scicloud._getscicloudnetconnection()
     resp = conn.send_request(_key_create,
                              {},
                              auth=(username, password))
@@ -99,7 +99,7 @@ def get_key_by_key(api_key, api_secretkey):
     (api_key and api_secretkey).
     """
     
-    conn = cloud._getcloudnetconnection()
+    conn = scicloud._getscicloudnetconnection()
     resp = conn.send_request(_key_get % api_key,
                              {},
                              auth=(api_key, api_secretkey))

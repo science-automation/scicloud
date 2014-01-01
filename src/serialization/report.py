@@ -4,9 +4,9 @@ This module is responsible for managing and writing serialization reports
 
 Copyright (c) 2009 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@picloud.com
+email: contact@piscicloud.com
 
-The cloud package is free software; you can redistribute it and/or
+The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -29,8 +29,8 @@ import distutils.dir_util
 
 from . import pickledebug
 from .serializationhandlers import DebugSerializer
-from .. import cloudconfig as cc
-from ..cloudlog import cloudLog, purgeDays
+from .. import scicloudconfig as cc
+from ..scicloudlog import scicloudLog, purgeDays
 from ..util import fix_sudo_path
 from pickledebug import DebugPicklingError 
 
@@ -88,7 +88,7 @@ class SerializationReport():
                 else:
                     break
             
-            cloudLog.info("Serialization reports will be written to %s " % logpath)                        
+            scicloudLog.info("Serialization reports will be written to %s " % logpath)                        
             fix_sudo_path(logpath)                
             self.logPath = logpath
                     
@@ -101,7 +101,7 @@ class SerializationReport():
             subdirs = os.listdir(logpath)
         except OSError, e:
             if e.errno != errno.ENOENT:
-                cloudLog.debug('Could not purge %s due to %s', logpath, str(e))
+                scicloudLog.debug('Could not purge %s due to %s', logpath, str(e))
             return
         now = time.time()
         allowed_difference = purgeDays * 24 * 3600 #purge days in seconds
@@ -110,14 +110,14 @@ class SerializationReport():
             try:
                 stat_result = os.stat(new_dir)
             except OSError:
-                cloudLog.warn('Could not stat %s', new_dir, exc_info = True)
+                scicloudLog.warn('Could not stat %s', new_dir, exc_info = True)
                 continue
             if stat.S_ISDIR(stat_result.st_mode) and (now - stat_result.st_mtime) > allowed_difference:
-                cloudLog.debug('Deleting %s (%s days old)', new_dir, (now - stat_result.st_ctime)/(24*3600))
+                scicloudLog.debug('Deleting %s (%s days old)', new_dir, (now - stat_result.st_ctime)/(24*3600))
                 try:
                     shutil.rmtree(new_dir)
                 except OSError:
-                    cloudLog.warn('Could not delete %s', new_dir, exc_info = True)
+                    scicloudLog.warn('Could not delete %s', new_dir, exc_info = True)
                      
     
     def update_counter(self, baselogname):
@@ -154,7 +154,7 @@ class SerializationReport():
     def save_report(self, dbgserializer, logname, cnt = None, pid = ''):
         
         if not hasattr(dbgserializer,'write_debug_report'):
-            #due to serialization level being cloud.call argument, we might not have
+            #due to serialization level being scicloud.call argument, we might not have
             # a write_debug_report in active serializer, even though this object exists
             return
         
