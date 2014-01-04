@@ -34,7 +34,7 @@ from .util import fix_sudo_path
 
 c = \
 """Filename where scicloud log messages should be written.
-This path is relative to ~/.piscicloud/"""
+This path is relative to ~/.picloud/"""
 logFilename = cc.logging_configurable('log_filename',
                                      default='scicloud.log',  #NOTE: will not create directories
                                      comment =c)

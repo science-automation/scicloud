@@ -2,7 +2,7 @@
 Buckets is a key-value interface to store and retrieve data objects up to 5 GB in size.
 
 A full overview of the bucket interface may be found within PiCloud's 
-`documentation <http://docs.piscicloud.com/bucket.html>`_.
+`documentation <http://docs.picloud.com/bucket.html>`_.
 
 This module provides a python interface to your bucket.
 
@@ -35,7 +35,7 @@ email: support@scivm.com
 
 Copyright (c) 2012 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@piscicloud.com
+email: contact@picloud.com
 
 The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
