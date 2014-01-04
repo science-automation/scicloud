@@ -13,12 +13,16 @@ This will run the function lambda: 3*3 on PiCloud's
 cluster, and return the result. Most functions, even
 user-defined ones, can be passed through scicloud.call
 
-For scicloud to work, you must first run 'picloud setup' in your shell.
+For scicloud to work, you must first run 'scicloud setup' in your shell.
 
 Alternatively, you can use the simulator by setting use_simulator to True 
 in scicloudconf.py or running scicloud.start_simulator()
 """
 """
+Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
+
+email: support@scivm.com
+
 Copyright (c) 2010 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
 email: contact@picloud.com
@@ -154,7 +158,7 @@ def start_simulator(force_restart = False):
     the multiprocessing library.
     Additional logging information will be enabled.
     For more information, see 
-    `PiCloud documentation <http://docs.picloud.com/scicloud_simulator.html>`_
+    `PiCloud documentation <http://docs.scivm.com/scicloud_simulator.html>`_
     """
 
     scicloudinterface._setscicloud(sys.modules[__name__], 'simulated', restart=force_restart)
@@ -164,10 +168,10 @@ def setkey(api_key, api_secretkey=None, server_url=None, restart=False, immutabl
     """
     Connect scicloud to your PiCloud account, given your *api_key*.
     Your *api_key* is provided by PiCloud on the 
-    `API Keys <http://www.picloud.com/accounts/apikeys/>`_ section of the PiCloud website.
+    `API Keys <https://dashboard.scivm.com/accounts/apikeys/>`_ section of the PiCloud website.
     
     The *api_secretkey* is generally stored on your machine.  However, if you have not previously used 
-    this api_key or selected it in 'picloud setup', you will need to provide it.
+    this api_key or selected it in 'scicloud setup', you will need to provide it.
     
     *server_url* specifies the PiCloud server to connect to.  Leave this blank to auto-resolve servers.
 

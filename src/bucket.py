@@ -2,7 +2,7 @@
 Buckets is a key-value interface to store and retrieve data objects up to 5 GB in size.
 
 A full overview of the bucket interface may be found within PiCloud's 
-`documentation <http://docs.picloud.com/bucket.html>`_.
+`documentation <http://docs.scivm.com/bucket.html>`_.
 
 This module provides a python interface to your bucket.
 
