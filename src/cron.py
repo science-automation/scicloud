@@ -1,16 +1,20 @@
 """
-For managing crons on PiCloud.  
+For managing crons on Science VM.  
 Crons allow you to "register" a function to be invoked periodically on PiCloud
 according to a schedule you specify.
 
 Api keys must be configured before using any functions in this module.
-(via scicloudconf.py, scicloud.setkey, or being on PiCloud server)
+(via scicloudconf.py, scicloud.setkey, or being on Science VM server)
 """
 from __future__ import absolute_import
 """
+Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
+
+email: support@scivm.com
+
 Copyright (c) 2011 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@piscicloud.com
+email: contact@picloud.com
 
 The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

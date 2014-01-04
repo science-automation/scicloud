@@ -1,19 +1,23 @@
 '''
 Cloud Multiprocessing Interface
 
-sciscicloud.mp has effectively the same interface as scicloud.
+scicloud.mp has effectively the same interface as scicloud.
 
 All jobs will be run locally, on multiple processors, via the multiprocessing library
 
 Sample usage::
 
-    import sciscicloud.mp
-    jid = sciscicloud.mp.call(lambda: 3*3)
+    import scicloud.mp
+    jid = scicloud.mp.call(lambda: 3*3)
     >> Returns a job identifier
     scicloud.mp.result(jid)
     >> Returns 9
 '''
 '''
+Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
+
+email: support@scivm.com
+
 Copyright (c) 2010 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
 email: contact@piscicloud.com

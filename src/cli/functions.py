@@ -3,6 +3,10 @@ Functions wrap Science VM calls
 
 """
 """
+Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
+
+email: support@scivm.com
+
 Copyright (c) 2012 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
 email: contact@piscicloud.com

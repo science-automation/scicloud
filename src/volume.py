@@ -1,12 +1,16 @@
 """
 Science VM volume management.
-This module allows the user to manage their volumes on PiCloud.
+This module allows the user to manage their volumes on Science VM.
 See documentation at http://docs.scivm.com
 
 Be advised that you must have rsync installed for this module to work
 """
 from __future__ import absolute_import
 """
+Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
+
+email: support@scivm.com
+
 Copyright (c) 2012 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
 email: contact@piscicloud.com

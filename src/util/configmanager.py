@@ -1,9 +1,13 @@
 """
-PiCloud configuration backend
+Science VM configuration backend
+
+Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
+
+email: support@scivm.com
 
 Copyright (c) 2010 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 
-email: contact@piscicloud.com
+email: contact@picloud.com
 
 The scicloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

@@ -1,7 +1,11 @@
 """
-PiCloud Simulator.
+Science VM Simulator.
 This is just a subclass of multiprocessing that modifies configuration options.
 In the future, it may be more powerful
+
+Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
+
+email: support@scivm.com
 
 Copyright (c) 2009 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
 

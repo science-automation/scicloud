@@ -3,6 +3,10 @@ ArgumentParsers for processing input to the Science VM CLI.
 """
 from __future__ import absolute_import
 """
+Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
+
+email: support@scivm.com
+
 Copyright (c) 2011 `PiCloud, Inc. <http://www.scivm.com>`_.  All rights reserved.
 
 email: contact@piscicloud.com
