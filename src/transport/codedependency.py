@@ -10,7 +10,7 @@ Entirely arbitrary pathhooks are not supported for now - only ZipImporter
     (specifically importers with a archive attribute)
     
 There are some hacks to deal with transmitting archives -- we coerce archives to be stored
-to scicloud.archives/archive. 
+to cloud.archives/archive. 
 An eventual goal is to clean up the hackish pathhook support code 
 
 
@@ -22,7 +22,7 @@ Copyright (c) 2009 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -48,11 +48,11 @@ import struct
 import marshal
 import dis
 
-from ..serialization import scicloudpickle
+from ..serialization import cloudpickle
 import logging
 
-from .. import scicloudconfig as cc
-scicloudLog = logging.getLogger("Cloud.Transport")
+from .. import cloudconfig as cc
+cloudLog = logging.getLogger("Cloud.Transport")
 
 LOAD_CONST = chr(dis.opname.index('LOAD_CONST'))
 IMPORT_NAME = chr(dis.opname.index('IMPORT_NAME'))
@@ -121,7 +121,7 @@ class DependencyManager(modulefinder.ModuleFinder):
         
         # analyze main which is not transmitted
         m = sys.modules['__main__']
-        if getattr(m,'__file__', None) and scicloudpickle.useForcedImports:
+        if getattr(m,'__file__', None) and cloudpickle.useForcedImports:
             #print 'injected main %s' % m
             self.inject_module(m)
             #if main imports a.b we might not see that b has been loaded
@@ -275,7 +275,7 @@ class DependencyManager(modulefinder.ModuleFinder):
         if is_archive:            
             #module's filename is set to the actual archive
             relfilename = os.path.split(filename)[1]
-            #scicloudpickle needs to know about this to deserialize correctly:             
+            #cloudpickle needs to know about this to deserialize correctly:             
         else:
             
             #extract relative path of file from filename
@@ -292,7 +292,7 @@ class DependencyManager(modulefinder.ModuleFinder):
             relfilename = relfilename[:-1] #remove terminating /
             
         self.modules[fqname] = m = modulefinder.Module(fqname, filename, path)
-        scicloudLog.debug('Dependent module %s found (relfile=%s, path=%s, filename=%s)', 
+        cloudLog.debug('Dependent module %s found (relfile=%s, path=%s, filename=%s)', 
                        fqname, relfilename, path, filename)
         #scivm: Timestamp module for update checks
         #Note: Must use 'reserved' names as modulefinder.import_module will setattr(parant, child_mod)
@@ -352,10 +352,10 @@ class DependencyManager(modulefinder.ModuleFinder):
                     try:
                         if '__init__' in filename:                        
                             #return open(filename, 'U'), filename, (os.path.splitext(filename)[1]
-                            scicloudLog.debug('hack find package resolved %s' % filename)
+                            cloudLog.debug('hack find package resolved %s' % filename)
                             return (None, os.path.split(filename)[0], ('', '', imp.PKG_DIRECTORY))
                         else: # general reference (celery, et al)
-                            scicloudLog.debug('hack find file resolved %s' % filename)
+                            cloudLog.debug('hack find file resolved %s' % filename)
                             modname, ext = os.path.splitext(filename)
                             if ext == '.py':
                                 ftype = imp.PY_SOURCE
@@ -364,13 +364,13 @@ class DependencyManager(modulefinder.ModuleFinder):
                                 ftype = imp.PY_COMPILED
                                 mode = 'rb'
                             else:
-                                scicloudLog.debug('hack find unknown file extension %s', filename)
+                                cloudLog.debug('hack find unknown file extension %s', filename)
                                 return None
                             retval = open(filename, mode), filename, (ext, mode, ftype)
                             #print retval
                             return retval
                     except IOError, i:
-                        scicloudLog.debug('hack find file/pkg failed to resolve %s due to exception %s', filename, i)
+                        cloudLog.debug('hack find file/pkg failed to resolve %s due to exception %s', filename, i)
                         pass
                     
         
@@ -416,7 +416,7 @@ class DependencyManager(modulefinder.ModuleFinder):
             
             if not hasattr(loader, 'archive') or not hasattr(loader, 'get_code'):
                 if fullname not in self.transitError:
-                    scicloudLog.warn("Cloud cannot transmit python module '%s'.  \
+                    cloudLog.warn("Cloud cannot transmit python module '%s'.  \
                     It needs to be imported by a %s path hook, but such a path hook does not provide both the \
                     'archive' and 'get_code' property..  Import errors may result; please see PiCloud documentation." % (fullname, str(loader)))                
                     self.transitError.add(fullname)
@@ -498,7 +498,7 @@ class DependencyManager(modulefinder.ModuleFinder):
                 try:
                     co = archive.get_code(name)
                 except ImportError:
-                    scicloudLog.warn("Cloud cannot read '%s' within '%s'.  Import errors may result; \
+                    cloudLog.warn("Cloud cannot read '%s' within '%s'.  Import errors may result; \
                     please see PiCloud documentation." % (fqname, archive.archive))
                     raise
                 m = self.add_module(fqname, archive.archive, is_archive = True)
@@ -511,19 +511,19 @@ class DependencyManager(modulefinder.ModuleFinder):
                 try:
                     co = compile(fp.read()+'\n', pathname, 'exec')
                 except SyntaxError: #compilation fail.
-                    scicloudLog.warn("Syntax error in %s.  Import errors may occur in rare situations." % pathname)
+                    cloudLog.warn("Syntax error in %s.  Import errors may occur in rare situations." % pathname)
                     raise ImportError ("Syntax error in %s" %pathname)
                     
             elif type == imp.PY_COMPILED:
                 if fp.read(4) != imp.get_magic():
-                    scicloudLog.warn("Magic number on %s is invalid.  Import errors may occur in rare situations." % pathname)
+                    cloudLog.warn("Magic number on %s is invalid.  Import errors may occur in rare situations." % pathname)
                     self.msgout(2, "raise ImportError: Bad magic number", pathname)
                     raise ImportError, "Bad magic number in %s" % pathname
                 fp.read(4)
                 co = marshal.load(fp)
             elif type == imp.C_EXTENSION:
                 if fqname not in self.transitError:
-                    scicloudLog.warn("Cloud cannot transmit python extension '%s' located at '%s'.  Import errors may result; please see PiCloud documentation." % (fqname, pathname))                
+                    cloudLog.warn("Cloud cannot transmit python extension '%s' located at '%s'.  Import errors may result; please see PiCloud documentation." % (fqname, pathname))                
                     self.transitError.add(fqname)
                 raise ImportError(fqname)
             else:
@@ -536,8 +536,8 @@ class DependencyManager(modulefinder.ModuleFinder):
             names = co.co_names        
             if names and '__import__' in names:
                 #PiCloud: Warn on __import__
-                    scicloudLog.warn('__import__ found within %s. Cloud cannot follow these \
-dependencies. You MAY see importerror scicloud exceptions. For more information, consult the PiCloud manual' 
+                    cloudLog.warn('__import__ found within %s. Cloud cannot follow these \
+dependencies. You MAY see importerror cloud exceptions. For more information, consult the PiCloud manual' 
                     % fqname)            
             self.scan_code(co, m)
         self.msgout(2, "load_module ->", m)
@@ -571,7 +571,7 @@ class FilePackager(object):
     
     fileCollection = None
     depManager = None
-    ARCHIVE_PATH = 'scicloud.archive/' #location where archives are extracted
+    ARCHIVE_PATH = 'cloud.archive/' #location where archives are extracted
        
     def __init__(self, path_infos=None, dep_manager = None):
         """path_infos is a list of (paths relative to site-packages, archive)""" 
@@ -598,16 +598,16 @@ class FilePackager(object):
             if os.path.exists(tst):
                 self.fileCollection[relPath] = tst     
                 return           
-        from ..scicloud import CloudException
+        from ..cloud import CloudException
         msg = 'FilePackager: %s not found on sys.path, resolving through modules list. sys.path=%s.' % (relPath, sys.path)
-        scicloudLog.debug(msg)
+        cloudLog.debug(msg)
         if self.depManager:
             for modobj in self.depManager.modules.values():
                 if modobj._c__relfilename == relPath:
                     self.fileCollection[relPath] = modobj.__file__
                     return
         msg = 'FilePackager: %s not found on sys.path %s. or sys.modules' % (relPath)
-        scicloudLog.error(msg)
+        cloudLog.error(msg)
         raise CloudException(msg)
             
     

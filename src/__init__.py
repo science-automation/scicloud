@@ -1,22 +1,22 @@
 """
-Interface for scicloud - the clientside module for PiCloud
+Interface for cloud - the clientside module for PiCloud
 
 Sample usage::
 
-    import scicloud
-    jid = scicloud.call(lambda: 3*3)
+    import cloud
+    jid = cloud.call(lambda: 3*3)
     >> Returns a job identifier
-    scicloud.result(jid)
+    cloud.result(jid)
     >> Returns 9
 
 This will run the function lambda: 3*3 on PiCloud's
 cluster, and return the result. Most functions, even
-user-defined ones, can be passed through scicloud.call
+user-defined ones, can be passed through cloud.call
 
-For scicloud to work, you must first run 'scicloud setup' in your shell.
+For cloud to work, you must first run 'cloud setup' in your shell.
 
 Alternatively, you can use the simulator by setting use_simulator to True 
-in scicloudconf.py or running scicloud.start_simulator()
+in cloudconf.py or running cloud.start_simulator()
 """
 """
 Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
@@ -27,7 +27,7 @@ Copyright (c) 2010 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -55,7 +55,7 @@ import logging
 #Input hooks
 class ImportHook(object):
     def __init__(self):
-        self.mods = []  #Reloading mods in order will reload entire scicloud
+        self.mods = []  #Reloading mods in order will reload entire cloud
     
     def load_module(self, fullname):
         """This is called by the system to load a module
@@ -83,7 +83,7 @@ class ImportHook(object):
     
     def find_module(self, fullname, path = None):
         """This is called by the system to find a module.
-        scicloud.* modules are hooked into our system"""
+        cloud.* modules are hooked into our system"""
         #print 'find %s -- %s' % (fullname, threading.current_thread().ident)
         
         if False:
@@ -93,14 +93,14 @@ class ImportHook(object):
             except Exception: # race condition with multiprocessing
                 pass
         
-        if fullname.startswith('scicloud') and 'server' not in fullname:
+        if fullname.startswith('cloud') and 'server' not in fullname:
             self.path = path
             parentmod, ext, submod = fullname.rpartition('.')
             if parentmod:
                 path = sys.modules[parentmod].__path__
             else:
                 path = ""
-            try: #Fails due to attempting relative import of python packages, e.g scicloud.os
+            try: #Fails due to attempting relative import of python packages, e.g cloud.os
                 grp = imp.find_module(submod, path)
                 if not grp: #import error
                     return None
@@ -114,11 +114,11 @@ class ImportHook(object):
 _modHook = ImportHook()    
 sys.meta_path.append(_modHook) #registers our import hook    
 
-from . import scicloudconfig as cc
-import scicloudinterface
-from . import scicloud
+from . import cloudconfig as cc
+import cloudinterface
+from . import cloud
 
-__scicloud = None
+__cloud = None
 __type = None
 __immutable = False
 
@@ -130,57 +130,57 @@ join = None
 result = None
 kill = None
 is_simulated = None
-running_on_scicloud = None
+running_on_cloud = None
 connection_info = None
 
 __all__ = ["call", "map", "status", "result", "iresult", "is_simulated", "join", "kill",
-            "delete", "info", "connection_info", "running_on_scicloud", "setkey", "finished_statuses",
+            "delete", "info", "connection_info", "running_on_cloud", "setkey", "finished_statuses",
              "start_simulator", "config", "getconfigpath", "close","c1","c2","m1"]
 
-c = """The Cloud Simulator simulates scicloud.* functions locally, allowing for quicker debugging.
-If this is enabled, all scicloud.* functions will be run locally, rather than on PiCloud. See web documentation."""
+c = """The Cloud Simulator simulates cloud.* functions locally, allowing for quicker debugging.
+If this is enabled, all cloud.* functions will be run locally, rather than on PiCloud. See web documentation."""
 __useSimulator =  cc.account_configurable('use_simulator',
                                           default=False,
                                           comment=c)
 
-def _launch_scicloud():
-    scicloudinterface._setscicloud(sys.modules[__name__], 'simulated' if __useSimulator else 'network', restart=True)
+def _launch_cloud():
+    cloudinterface._setcloud(sys.modules[__name__], 'simulated' if __useSimulator else 'network', restart=True)
     
-_launch_scicloud()
+_launch_cloud()
 
-from .scicloud import CloudException, CloudTimeoutError
+from .cloud import CloudException, CloudTimeoutError
 
 def start_simulator(force_restart = False):
     """
-    Simulate scicloud functionality locally.
-    If *force_restart* or not already in simulation mode, restart scicloud and enter simulation.
-    In simulation mode, the scicloud will be run locally, on multiple processors, via 
+    Simulate cloud functionality locally.
+    If *force_restart* or not already in simulation mode, restart cloud and enter simulation.
+    In simulation mode, the cloud will be run locally, on multiple processors, via 
     the multiprocessing library.
     Additional logging information will be enabled.
     For more information, see 
-    `PiCloud documentation <http://docs.scivm.com/scicloud_simulator.html>`_
+    `PiCloud documentation <http://docs.scivm.com/cloud_simulator.html>`_
     """
 
-    scicloudinterface._setscicloud(sys.modules[__name__], 'simulated', restart=force_restart)
+    cloudinterface._setcloud(sys.modules[__name__], 'simulated', restart=force_restart)
 
     
 def setkey(api_key, api_secretkey=None, server_url=None, restart=False, immutable=False):
     """
-    Connect scicloud to your PiCloud account, given your *api_key*.
+    Connect cloud to your PiCloud account, given your *api_key*.
     Your *api_key* is provided by PiCloud on the 
     `API Keys <https://dashboard.scivm.com/accounts/apikeys/>`_ section of the PiCloud website.
     
     The *api_secretkey* is generally stored on your machine.  However, if you have not previously used 
-    this api_key or selected it in 'scicloud setup', you will need to provide it.
+    this api_key or selected it in 'cloud setup', you will need to provide it.
     
     *server_url* specifies the PiCloud server to connect to.  Leave this blank to auto-resolve servers.
 
-    *restart* forces the scicloud to reconnect
+    *restart* forces the cloud to reconnect
     
     This command will disable the simulator if it is running.
     """
     
-    scicloudinterface._setscicloud(sys.modules[__name__], 'network', api_key, api_secretkey, server_url, restart, immutable)
+    cloudinterface._setcloud(sys.modules[__name__], 'network', api_key, api_secretkey, server_url, restart, immutable)
 
 def set_dependency_whitelist(whitelist):
     """            
@@ -206,26 +206,26 @@ def set_dependency_whitelist(whitelist):
     from .transport.network import HttpConnection
     
     # must have a connected network connection to create a dependency manager
-    netcon = _getscicloudnetconnection()
+    netcon = _getcloudnetconnection()
     adapter = netcon.adapter
     
     adapter._create_dependency_manager(whitelist)
 
 
-def _getscicloud():
-    """Return internal scicloud object. Only for internal use"""
-    return __scicloud
+def _getcloud():
+    """Return internal cloud object. Only for internal use"""
+    return __cloud
 
-def _getscicloudnetconnection():
-    """Returns scicloud connection if it is an HttpConnection. else raise Exception"""
+def _getcloudnetconnection():
+    """Returns cloud connection if it is an HttpConnection. else raise Exception"""
     from .transport.adapter import SerializingAdapter
     from .transport.network import HttpConnection
-    if not isinstance(__scicloud.adapter, SerializingAdapter):
-        raise Exception('Unexpected scicloud adapter being used')
+    if not isinstance(__cloud.adapter, SerializingAdapter):
+        raise Exception('Unexpected cloud adapter being used')
     
-    conn = __scicloud.adapter.connection
+    conn = __cloud.adapter.connection
     if isinstance(conn, HttpConnection):
-        __scicloud._checkOpen()
+        __cloud._checkOpen()
         return conn
     else:
         raise RuntimeError('Cannot use this functionality in simulation')
@@ -254,22 +254,22 @@ except ImportError:
     try:
         import multiprocessing
     except ImportError: #if mp error, fall back
-        scicloud.scicloudLog.warn('Multiprocessing is not installed. Cloud.mp will be disabled')
+        cloud.cloudLog.warn('Multiprocessing is not installed. Cloud.mp will be disabled')
     else:
         raise #something else has gone wrong
     
-from . import account   #scicloud.account
-from . import cron      #scicloud.cron
+from . import account   #cloud.account
+from . import cron      #cloud.cron
 
 """
-if __scicloud.running_on_scicloud():
-    # use server-side implementation of scicloud.bucket
-    from . import _server_bucket as bucket   #scicloud.bucket
+if __cloud.running_on_cloud():
+    # use server-side implementation of cloud.bucket
+    from . import _server_bucket as bucket   #cloud.bucket
 else:   
     from . import bucket    #default loud.bucket
 """    
 
-from . import shell     #scicloud.shell
-from . import queue     #scicloud.queue
+from . import shell     #cloud.shell
+from . import queue     #cloud.queue
 
-from . import files     #scicloud.files (DEPRECATED)
+from . import files     #cloud.files (DEPRECATED)

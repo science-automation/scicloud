@@ -13,7 +13,7 @@ Copyright (c) 2013 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -40,12 +40,12 @@ import sys
 import string
 import time
 
-import scicloud
-from .scicloudlog import stdout as print_stdout, stderr as print_stderr
+import cloud
+from .cloudlog import stdout as print_stdout, stderr as print_stderr
 from .util import credentials
 from .util import common
 
-scicloudLog = logging.getLogger('Cloud.environment')
+cloudLog = logging.getLogger('Cloud.environment')
 
 plat = platform.system()
 
@@ -114,7 +114,7 @@ def list_bases():
     return resp['bases_list']
 
 def create(name, base, desc=None):
-    """Creates a new scicloud environment.
+    """Creates a new cloud environment.
 
     * name: name of the new environment (max 30 chars)
     * base: name of the base OS to use for the environment (use list_bases to
@@ -126,21 +126,21 @@ def create(name, base, desc=None):
     """
     pattern = '^[a-zA-Z0-9_-]*$'
     if not name:
-        raise scicloud.CloudException('No environment name given')
+        raise cloud.CloudException('No environment name given')
     elif len(name) > 30:
-        raise scicloud.CloudException('Environment name cannot be more than 30'
+        raise cloud.CloudException('Environment name cannot be more than 30'
                                    ' characters')
     elif not re.match(pattern, name):
-        raise scicloud.CloudException('Environment name must consist of letters,'
+        raise cloud.CloudException('Environment name must consist of letters,'
                                    ' numbers, underscores, or hyphens')
     if desc and len(desc) > 2000:
-        raise scicloud.CloudException('Environment description cannot be more'
+        raise cloud.CloudException('Environment description cannot be more'
                                    ' than 2000 characters')
 
     resp = _send_env_request('create',
                              {'env_name': name, 'base_name': base,
                               'env_desc': desc or ''})
-    scicloudLog.debug('created environment %s', resp['env_name'])
+    cloudLog.debug('created environment %s', resp['env_name'])
     return get_setup_hostname(name)
 
 def edit_info(name, new_name=None, new_desc=None):
@@ -155,23 +155,23 @@ def edit_info(name, new_name=None, new_desc=None):
 
     pattern = '^[a-zA-Z0-9_-]*$'
     if not name:
-        raise scicloud.CloudException('No environment name given')
+        raise cloud.CloudException('No environment name given')
 
     if new_name is not None:
         if len(new_name) > 30:
-            raise scicloud.CloudException('Environment name cannot be more than 30'
+            raise cloud.CloudException('Environment name cannot be more than 30'
                                        ' characters')
         elif not re.match(pattern, name):
-            raise scicloud.CloudException('Environment name must consist of letters,'
+            raise cloud.CloudException('Environment name must consist of letters,'
                                        ' numbers, underscores, or hyphens')
     if new_desc is not None and len(new_desc) > 2000:
-        raise scicloud.CloudException('Environment description cannot be more'
+        raise cloud.CloudException('Environment description cannot be more'
                                    ' than 2000 characters')
 
     resp = _send_env_request('edit_info',
                              {'old_env_name': name, 'new_name': new_name,
                               'new_desc': new_desc})
-    scicloudLog.debug('edited info for environment %s', resp['env_name'])
+    cloudLog.debug('edited info for environment %s', resp['env_name'])
 
 def modify(name):
     """Modifies an existing environment.
@@ -181,7 +181,7 @@ def modify(name):
     Returns the hostname of the setup server where environment can be modified.
     """
     resp = _send_env_request('modify', {'env_name': name})
-    scicloudLog.debug('modify requested for env %s', resp['env_name'])
+    cloudLog.debug('modify requested for env %s', resp['env_name'])
     return get_setup_hostname(name)
 
 def save(name):
@@ -194,7 +194,7 @@ def save(name):
     version of the environment is available for use by all workers.
     """
     resp = _send_env_request('save', {'env_name': name})
-    scicloudLog.debug('save requested for env %s', resp['env_name'])
+    cloudLog.debug('save requested for env %s', resp['env_name'])
     wait_for_edit(name)
 
 def save_shutdown(name):
@@ -207,7 +207,7 @@ def save_shutdown(name):
     version of the environment is available for use by all workers.
     """
     resp = _send_env_request('save_shutdown', {'env_name': name})
-    scicloudLog.debug('save_shutdown requested for env %s', resp['env_name'])
+    cloudLog.debug('save_shutdown requested for env %s', resp['env_name'])
     wait_for_idle(name)
 
 def shutdown(name):
@@ -216,11 +216,11 @@ def shutdown(name):
     * name: name of the environment to save
     """
     resp = _send_env_request('shutdown', {'env_name': name})
-    scicloudLog.debug('shutdown requested for env %s', resp['env_name'])
+    cloudLog.debug('shutdown requested for env %s', resp['env_name'])
     wait_for_idle(name)
 
 def clone(parent_name, new_name=None, new_desc=None):
-    """Creates a new scicloud environment by cloning an existing one.
+    """Creates a new cloud environment by cloning an existing one.
 
     * parent_name: name of the existing environment to clone
     * new_name: new name of the environment. default is
@@ -231,20 +231,20 @@ def clone(parent_name, new_name=None, new_desc=None):
     pattern = '^[a-zA-Z0-9_-]*$'
     new_name = new_name or (parent_name + '_clone')
     if len(new_name) > 30:
-        raise scicloud.CloudException('Environment name cannot be more than 30'
+        raise cloud.CloudException('Environment name cannot be more than 30'
                                    ' characters')
     elif not re.match(pattern, new_name):
-        raise scicloud.CloudException('Environment name must consist of letters,'
+        raise cloud.CloudException('Environment name must consist of letters,'
                                    ' numbers, underscores, or hyphens')
     if new_desc and len(new_desc) > 2000:
-        raise scicloud.CloudException('Environment description cannot be more'
+        raise cloud.CloudException('Environment description cannot be more'
                                    ' than 2000 characters')
 
     resp = _send_env_request('create',
                              {'parent_env_name': parent_name,
                               'env_name': new_name,
                               'env_desc': new_desc})
-    scicloudLog.debug('created environment %s', resp['env_name'])
+    cloudLog.debug('created environment %s', resp['env_name'])
     wait_for_idle(new_name)
 
 def delete(name):
@@ -253,7 +253,7 @@ def delete(name):
     * name: Name of the environment to save
     """
     resp = _send_env_request('delete', {'env_name': name})
-    scicloudLog.debug('delete requested for env %s', resp['env_name'])
+    cloudLog.debug('delete requested for env %s', resp['env_name'])
 
 def get_setup_hostname(name):
     """Returns the hostname of the setup server where environment can be
@@ -264,12 +264,12 @@ def get_setup_hostname(name):
     """
     env_info = wait_for_edit(name, _ACTION_IDLE)
     if env_info is None:
-        raise scicloud.CloudException('Environment is not being modified')
+        raise cloud.CloudException('Environment is not being modified')
     return env_info['hostname']
 
 def get_key_path():
     """Return the key file path for sshing into setup server."""
-    api_key = scicloud.connection_info().get('api_key')
+    api_key = cloud.connection_info().get('api_key')
     return credentials.get_sshkey_path(api_key)
 
 def ssh(name, cmd=None):
@@ -331,7 +331,7 @@ def rsync(src_path, dest_path, delete=False, pipe_output=False):
     If *delete* is True, files that exist in *dest_path* but not in *src_path*
     will be deleted.  By default, such files will not be removed.
     """
-    conn = scicloud._getscicloudnetconnection()
+    conn = cloud._getcloudnetconnection()
     retry_attempts = conn.retry_attempts
     dest_is_local = common.is_local_path(dest_path)
     l_paths, r_paths = ((dest_path, src_path) if dest_is_local else
@@ -356,7 +356,7 @@ def rsync(src_path, dest_path, delete=False, pipe_output=False):
             raise Exception('rsync failed multiple attempts... '
                             'Please contact PiCloud support')
     except Exception as e:
-        scicloudLog.error('Environment rsync errored with:\n%s', e)
+        cloudLog.error('Environment rsync errored with:\n%s', e)
         print e
 
 def run_script(name, filename):
@@ -372,7 +372,7 @@ def run_script(name, filename):
         run = "chmod 700 {0}; ./{0} &> {0}.out; cat {0}.out".format(dest_file)
         output = ssh(name, run)
     except Exception as e:
-        scicloudLog.error('script could not be run: %s', str(e))
+        cloudLog.error('script could not be run: %s', str(e))
         print 'Script could not be run on the setup server.'
         print e
     else:
@@ -404,23 +404,23 @@ def _wait_for(name, action, invalid_actions=None, poll_frequency=2,
         resp = list_envs(name)
 
         if len(resp) == 0:
-            raise scicloud.CloudException('No matching environment found.')
+            raise cloud.CloudException('No matching environment found.')
         elif len(resp) != 1:
-            scicloudLog.error('single env query returned %s results', len(resp))
-            raise scicloud.CloudException('Unexpected result from PiCloud. '
+            cloudLog.error('single env query returned %s results', len(resp))
+            raise cloud.CloudException('Unexpected result from PiCloud. '
                                        'Please contact PiCloud support.')
         env_info = resp.pop()
         resp_status = env_info['status']
         resp_action = env_info['action']
         if resp_status == _STATUS_ERROR:
-            raise scicloud.CloudException('Environment creation failed. '
+            raise cloud.CloudException('Environment creation failed. '
                                        'Please contact PiCloud support.')
         elif resp_status == _STATUS_READY:
             if resp_action == _ACTION_SETUP_ERROR:
-                raise scicloud.CloudException('Setup server launch failed. '
+                raise cloud.CloudException('Setup server launch failed. '
                                            'Please contact PiCloud support.')
             elif resp_action == _ACTION_SAVE_ERROR:
-                raise scicloud.CloudException('Environment save failed. '
+                raise cloud.CloudException('Environment save failed. '
                                            'Please contact PiCloud support.')
             elif resp_action in invalid_actions:
                 return None
@@ -431,5 +431,5 @@ def _wait_for(name, action, invalid_actions=None, poll_frequency=2,
 
         time.sleep(poll_frequency)
         
-    raise scicloud.CloudException('Environment operation timed out. '
+    raise cloud.CloudException('Environment operation timed out. '
                                'Please contact PiCloud support.')

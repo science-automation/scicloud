@@ -14,7 +14,7 @@ Copyright (c) 2011 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -45,23 +45,23 @@ except ImportError: #If python version < 2.6, we need to use simplejson
 from .util import template
 from .rest import _low_level_publish
 from .cron import _low_level_register
-from .scicloud import CloudException
-from . import _getscicloud
+from .cloud import CloudException
+from . import _getcloud
 
-def _get_scicloud_and_params(command, kwargs, ignore = []):
+def _get_cloud_and_params(command, kwargs, ignore = []):
     for kwd in kwargs: 
         if not kwd.startswith('_'):
-            raise ValueError('wildcard kwargs must be scicloud kwd')        
+            raise ValueError('wildcard kwargs must be cloud kwd')        
     
-    scicloud = _getscicloud()
-    scicloud._checkOpen()
+    cloud = _getcloud()
+    cloud._checkOpen()
     
-    params = scicloud._getJobParameters(None, kwargs, ignore)
+    params = cloud._getJobParameters(None, kwargs, ignore)
     params['func_name'] = command
     params['fast_serialization'] = 2 # guarenteed to pass
     params['language'] = 'shell'
     
-    return scicloud, params    
+    return cloud, params    
 
 def execute(command, argdict, return_file=None, ignore_exit_status=False, cwd=None, **kwargs):
     """Execute (possibly) templated *command*. Returns Job IDentifier (jid)
@@ -70,7 +70,7 @@ def execute(command, argdict, return_file=None, ignore_exit_status=False, cwd=No
     * return_file: Contents of this file will be result of job.  result is stdout if not provided
     * ignore_exit_status: if true, a non-zero exit code will not result in job erroring     
     * cwd: Current working directory to execute command within
-    * kwargs: See scicloud.call underscored keyword arguments
+    * kwargs: See cloud.call underscored keyword arguments
     
     """
     
@@ -78,15 +78,15 @@ def execute(command, argdict, return_file=None, ignore_exit_status=False, cwd=No
     
     _handle_args_upload(argdict)
     
-    scicloud, params = _get_scicloud_and_params(command, kwargs)
+    cloud, params = _get_cloud_and_params(command, kwargs)
     
-    jid = scicloud.adapter.job_call(params, _wrap_execute_program(command, return_file, ignore_exit_status, cwd = cwd), 
+    jid = cloud.adapter.job_call(params, _wrap_execute_program(command, return_file, ignore_exit_status, cwd = cwd), 
                                  (), argdict)
     return jid  
 
 def execute_map(command, common_argdict, map_argdict, return_file=None, 
                 ignore_exit_status=False, cwd=None, **kwargs):
-    """Execute templated command in parallel. Return list of Job Identifiers (jids). See scicloud.map
+    """Execute templated command in parallel. Return list of Job Identifiers (jids). See cloud.map
         for more information about mapping.  Arguments to this are:
         
     * common_argdict - Dictionary mapping template parameters to values for ALL map jobs
@@ -97,7 +97,7 @@ def execute_map(command, common_argdict, map_argdict, return_file=None,
     * return_file: Contents of this file will be result of job.  result is stdout if not provided
     * ignore_exit_status: if true, a non-zero exit code will not result in job erroring   
     * cwd: Current working directory to execute command within
-    * kwargs: See scicloud.map underscored keyword arguments     
+    * kwargs: See cloud.map underscored keyword arguments     
     """
     #print 'c/m', common_argdict, map_argdict
     
@@ -137,9 +137,9 @@ def execute_map(command, common_argdict, map_argdict, return_file=None,
         _handle_args_upload(map_template)        
         map_template_lists.append(map_template)
     
-    scicloud, params = _get_scicloud_and_params(command, kwargs)
+    cloud, params = _get_cloud_and_params(command, kwargs)
         
-    jids = scicloud.adapter.jobs_map(params, 
+    jids = cloud.adapter.jobs_map(params, 
                                  _wrap_execute_program(command, return_file, 
                                                        ignore_exit_status, common_argdict, cwd=cwd),                                 
                                 None, map_template_lists)
@@ -150,10 +150,10 @@ def rest_publish(command, label, return_file=None,
                 ignore_exit_status=False, **kwargs):
     """Publish shell *command* to PiCloud so it can be invoked through the PiCloud REST API
     The published function will be managed in the future by a unique (URL encoded) *label*.
-    Returns url of published function. See scicloud.rest.publish
+    Returns url of published function. See cloud.rest.publish
     
-    See scicloud.shell.execute for description other arguments    
-    See scicloud.rest.publish for description of **kwargs
+    See cloud.shell.execute for description other arguments    
+    See cloud.rest.publish for description of **kwargs
     """
 
     if not label:
@@ -166,7 +166,7 @@ def rest_publish(command, label, return_file=None,
     except (UnicodeDecodeError, UnicodeEncodeError): #should not be possible
         raise TypeError('label must be an ASCII string')
     
-    scicloud, params = _get_scicloud_and_params(command, kwargs,
+    cloud, params = _get_cloud_and_params(command, kwargs,
                                           ignore=['_label', '_depends_on', '_depends_on_errors'] )
     
     # shell argspecs are dictionaries
@@ -190,13 +190,13 @@ def cron_register(command, label, schedule, return_file = None,
     """Register shell *command* to be run periodically on PiCloud according to *schedule*
     The cron can be managed in the future by the specified *label*.
     
-    Flags only relevant if you call scicloud.result() on the cron job:
+    Flags only relevant if you call cloud.result() on the cron job:
     return_file: Contents of this file will be result of job created by REST invoke.  
         result is stdout if not provided
     ignore_exit_status: if true, a non-zero exit code will not result in job erroring
     """
 
-    scicloud, params = _get_scicloud_and_params(command, kwargs,
+    cloud, params = _get_cloud_and_params(command, kwargs,
                                           ignore=['_label', '_depends_on', '_depends_on_errors'] )
     func = _wrap_execute_program(command, return_file, ignore_exit_status)
     
@@ -204,7 +204,7 @@ def cron_register(command, label, schedule, return_file = None,
     
 """execution logic"""
 def _execute_shell_program(command, return_file, ignore_exit_status, template_args, cwd = None):
-    """Executes a shell program on the scicloud"""
+    """Executes a shell program on the cloud"""
     
     _handle_args_download(template_args, cwd)    
     templated_cmd = template.generate_command(command, template_args)
@@ -358,8 +358,8 @@ def _decode_upload_action(action_dct, cwd):
     name = action_dct['filename']
     contents = action_dct['contents']
     
-    scicloud = _getscicloud()
-    if not scicloud.running_on_scicloud(): # simulation
+    cloud = _getcloud()
+    if not cloud.running_on_cloud(): # simulation
         name = tempfile.mktemp(suffix=name)        
     
     started = False

@@ -1,6 +1,6 @@
 """
-Defines all Cloud Adapters - objects that control lower-level behavior of the scicloud
-There is a one to one instance mapping between a scicloud and its adapter
+Defines all Cloud Adapters - objects that control lower-level behavior of the cloud
+There is a one to one instance mapping between a cloud and its adapter
 
 Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
 
@@ -10,7 +10,7 @@ Copyright (c) 2009 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -34,16 +34,16 @@ import threading
 from functools import partial
 from itertools import izip, imap, count
 
-from ..scicloud import CloudException
+from ..cloud import CloudException
 from .. import serialization
-from .. import scicloudconfig as cc
-from ..scicloudlog import scicloudLog
+from .. import cloudconfig as cc
+from ..cloudlog import cloudLog
 from ..util import OrderedDict
 
 
 class Adapter(object):
     """
-    Abstract class to deal with lower-level scicloud operations
+    Abstract class to deal with lower-level cloud operations
     """
           
     _isopen = False
@@ -57,8 +57,8 @@ class Adapter(object):
         """called when this adapter is to be used"""
         if self.opened:
             raise CloudException("%s: Cannot open already-opened Adapter", str(self))
-        if not self._scicloud.opened:
-            self._scicloud.open()
+        if not self._cloud.opened:
+            self._cloud.open()
     
     def close(self):
         """called when this adapter is no longer needed"""
@@ -67,11 +67,11 @@ class Adapter(object):
         self._isopen = False
         
     @property
-    def scicloud(self):
-        return self._scicloud
+    def cloud(self):
+        return self._cloud
     
     def needs_restart(self, **kwargs):
-        """Called to determine if the scicloud must be restarted due to different adapter parameters"""
+        """Called to determine if the cloud must be restarted due to different adapter parameters"""
         return False
         
     def call(self, params, func, *args):
@@ -138,7 +138,7 @@ class SerializingAdapter(Adapter):
                                           comment=c)      
     if serializeLogging and not serializeDebugging:
         serializeDebugging = True
-        scicloudLog.warning("serialize_logging implies serialize_debugging. Setting serialize_debugging to true.")
+        cloudLog.warning("serialize_logging implies serialize_debugging. Setting serialize_debugging to true.")
     
     
     c = """Maximum amount of data (in bytes) that can be sent to the PiCloud server per function or function argument. 
@@ -167,7 +167,7 @@ class SerializingAdapter(Adapter):
         try:
             self._report = serialization.SerializationReport(subdir)
         except IOError, e:
-            scicloudLog.warn('Cannot construct serialization report directory. Error is %s' % str(e))
+            cloudLog.warn('Cannot construct serialization report directory. Error is %s' % str(e))
             self._report = None
             self.serializeLogging = False #disable logging
         
@@ -182,7 +182,7 @@ class SerializingAdapter(Adapter):
     def _configure_logging(self):
         #Seperated from open to allow for dynamic changes at runtime
         
-        #set up scicloud serializer object
+        #set up cloud serializer object
         self.min_size_to_save =  0 if self.serializeLogging else (self.max_transmit_data / 3)   
         #reporting:                
         if not self._report:
@@ -255,24 +255,24 @@ class SerializingAdapter(Adapter):
                     exmessage += 'The above snapshot describes the data that must be transmitted to execute your PiCloud call.\n'
             else:
                 exmessage += '\n To see data snapshots, use _fast_serialization = 0 (default)'
-                if not cc.transport_configurable('running_on_scicloud',default=False):
-                    exmessage += ' and enable serialize_debugging in scicloudconf.py\n'
+                if not cc.transport_configurable('running_on_cloud',default=False):
+                    exmessage += ' and enable serialize_debugging in cloudconf.py\n'
                 else:
                     exmessage += '\n'
             if is_result:
                 exmessage += 'You cannot return more than %s MB from a job' % (size_limit / 1000000)
-            elif cc.transport_configurable('running_on_scicloud',default=False):
-                exmessage += 'You cannot send more than %s MB per job argument via scicloud.call/map' % (size_limit / 1000000)
+            elif cc.transport_configurable('running_on_cloud',default=False):
+                exmessage += 'You cannot send more than %s MB per job argument via cloud.call/map' % (size_limit / 1000000)
             else:
-                exmessage += 'If you decide that you actually need to send this much data, increase max_transmit_data in scicloudconf.py (max 16 MB)\n'
+                exmessage += 'If you decide that you actually need to send this much data, increase max_transmit_data in cloudconf.py (max 16 MB)\n'
              
             if logfilename:
                 exmessage+= 'See entire serialization snapshot at ' + logfilename
-            elif not self.scicloud.running_on_scicloud():
-                exmessage+='Please enable serialize_logging in scicloudconf.py to see more detail'
+            elif not self.cloud.running_on_cloud():
+                exmessage+='Please enable serialize_logging in cloudconf.py to see more detail'
             raise CloudException(exmessage)
     
-    def _scicloud_serialize_helper(self, func, arg_serialization_level, args, argnames=[], logprefix="", 
+    def _cloud_serialize_helper(self, func, arg_serialization_level, args, argnames=[], logprefix="", 
                                 coerce_cnt=None, os_env_vars=[]):
         """Returns a serialization stream which produces a serialized function, then its arguments in order
         Also returns name of logfile and any counter associated with it
@@ -340,13 +340,13 @@ class SerializingAdapter(Adapter):
 
         
     
-    def scicloud_serialize(self, func, arg_serialization_level, args, argnames=[], logprefix="", 
+    def cloud_serialize(self, func, arg_serialization_level, args, argnames=[], logprefix="", 
                         coerce_cnt=None, os_env_vars=[]):
         """Return serialized_func, list of serialized_args
         Will save func and args to files.
         """
         
-        serialize_stream, logname, cnt = self._scicloud_serialize_helper(func, arg_serialization_level, 
+        serialize_stream, logname, cnt = self._cloud_serialize_helper(func, arg_serialization_level, 
                                                                       args, argnames, logprefix, 
                                                                       coerce_cnt, os_env_vars)
         if func:
@@ -364,8 +364,8 @@ class SerializingAdapter(Adapter):
     def map_reduce_job(self, mapper_func, reducer_func, bigdata_file):
         
         # serialize the the args above into params
-        smapper, _, _, _ = self.scicloud_serialize(mapper_func, 0, [])
-        sreducer, _, _, _ = self.scicloud_serialize(reducer_func, 0, [])
+        smapper, _, _, _ = self.cloud_serialize(mapper_func, 0, [])
+        sreducer, _, _, _ = self.cloud_serialize(reducer_func, 0, [])
         
         params = {}
         params['mapper_func'] = smapper
@@ -377,7 +377,7 @@ class SerializingAdapter(Adapter):
     
     def job_call(self, params, func, args, kwargs):
         os_env_vars = params.pop('os_env_vars', None)        
-        sfunc, sargs, logprefix, logcnt =  self.scicloud_serialize(func, params['fast_serialization'], 
+        sfunc, sargs, logprefix, logcnt =  self.cloud_serialize(func, params['fast_serialization'], 
                                                                 [args, kwargs], ['args', 'kwargs'], 'call.',
                                                                 os_env_vars=os_env_vars) 
         
@@ -399,12 +399,12 @@ class SerializingAdapter(Adapter):
         mapkwargnames = imap(lambda x: 'jobkwarg_' + str(x),count(1)) #infinite stream generates jobarg_ for logging                    
         
         os_env_vars = params.pop('os_env_vars', None)
-        sfunc, sargs, logname, logcnt =  self.scicloud_serialize(func, params['fast_serialization'], 
+        sfunc, sargs, logname, logcnt =  self.cloud_serialize(func, params['fast_serialization'], 
                                                               mapargs, mapargnames, 'map.', 
                                                               os_env_vars=os_env_vars)
         #handle kwargs if present
         if mapkwargs:
-            _, skwargs, _, _ = self.scicloud_serialize(None, params['fast_serialization'], mapkwargs, 
+            _, skwargs, _, _ = self.cloud_serialize(None, params['fast_serialization'], mapkwargs, 
                                                     mapkwargnames, logname, coerce_cnt = logcnt)
         else:
             skwargs = None        
@@ -468,7 +468,7 @@ class DependencyAdapter(SerializingAdapter):
                 if not name: #inspecting main module -- use val name
                     if isinstance(val,types.ModuleType):
                         item = val.__name__
-                        if item in ['scicloud','__builtin__']:
+                        if item in ['cloud','__builtin__']:
                             continue
                         tst = tuple(item.split('.'))
                         
@@ -498,7 +498,7 @@ class DependencyAdapter(SerializingAdapter):
 
     
     def _serialize_dep_handler(self, sarg):
-        """Used by scicloud_serialize imap on serialized args"""
+        """Used by cloud_serialize imap on serialized args"""
         
         self._create_dependency_manager()
         if self.dependencyManager:
@@ -508,10 +508,10 @@ class DependencyAdapter(SerializingAdapter):
         return sarg.serializedObject
         
     
-    def scicloud_serialize(self, func, arg_serialization_level, args, argnames=[], logprefix="", 
+    def cloud_serialize(self, func, arg_serialization_level, args, argnames=[], logprefix="", 
                         coerce_cnt=None, os_env_vars=[]):
         """
-        Similar to the normal scicloud_serialize, except tracks dependencies
+        Similar to the normal cloud_serialize, except tracks dependencies
         """
         
         try:
@@ -522,16 +522,16 @@ class DependencyAdapter(SerializingAdapter):
             # TODO: ipython support?
             force_aggressive = not main_file or main_file == '<stdin>'
             
-            if serialization.scicloudpickle.useForcedImports and \
+            if serialization.cloudpickle.useForcedImports and \
                 (self.aggressiveModuleSearch or force_aggressive):
                 self._check_forced_mods()      
     
             if not self.automaticDependencyTransfer:
-                return SerializingAdapter.scicloud_serialize(self, func, arg_serialization_level, 
+                return SerializingAdapter.cloud_serialize(self, func, arg_serialization_level, 
                                                           args, argnames, logprefix, coerce_cnt,
                                                           os_env_vars)   
             
-            serialize_stream, logname, cnt = self._scicloud_serialize_helper(func, arg_serialization_level, 
+            serialize_stream, logname, cnt = self._cloud_serialize_helper(func, arg_serialization_level, 
                                                                           args, argnames, logprefix, 
                                                                           coerce_cnt, os_env_vars)
                     
@@ -553,7 +553,7 @@ class DependencyAdapter(SerializingAdapter):
             
             
             try:
-                from .network import HttpConnection, scicloudLog as conLog
+                from .network import HttpConnection, cloudLog as conLog
                 import platform
                 import traceback
                 
@@ -591,14 +591,14 @@ class DependencyAdapter(SerializingAdapter):
             
             if deps:
             #if False:
-                scicloudLog.debug('New Dependencies %s' % str(deps))
+                cloudLog.debug('New Dependencies %s' % str(deps))
                 #modules are a tuple of (modname, timestamp, archvie)
                 modules = self.connection.modules_check(deps)
                 if modules:
                     from ..transport.codedependency import FilePackager
                     f = FilePackager(map(lambda module: (module[0], module[2]), modules), self.dependencyManager)
                     tarball = f.get_tarball()
-                    scicloudLog.info('FileTransfer: Transferring %s' % modules)
+                    cloudLog.info('FileTransfer: Transferring %s' % modules)
                     self.connection.modules_add(modules, tarball)
             
             #if no exception raised, commit snapshot
@@ -618,8 +618,8 @@ class DependencyAdapter(SerializingAdapter):
             if self.opening or self.opened:
                 return
             SerializingAdapter.open(self)
-            if self._scicloud.running_on_scicloud(): 
-                # within scicloud, we have all needed dependencies so no need to transfer any
+            if self._cloud.running_on_cloud(): 
+                # within cloud, we have all needed dependencies so no need to transfer any
                 self.automaticDependencyTransfer = False            
             self.modDepLock = threading.Lock()            
             self._isopen = True

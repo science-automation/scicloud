@@ -10,7 +10,7 @@ Copyright (c) 2009 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -38,13 +38,13 @@ except ImportError:
     from StringIO import StringIO
 
 from . import xmlhandlers
-from .scicloudpickle import CloudPickler
+from .cloudpickle import CloudPickler
 from .. import util
 from ..util import islambda
-from .. import scicloudconfig as cc
+from .. import cloudconfig as cc
 
 import logging
-scicloudLog = logging.getLogger("Cloud.Transport")
+cloudLog = logging.getLogger("Cloud.Transport")
 
 class DebugPicklingError(pickle.PicklingError):
     def __init__(self, msg, xmltrace):        
@@ -92,7 +92,7 @@ class CloudDebugPickler(CloudPickler):
         try:
             CloudPickler.dump(self,obj)
         except PicklingError, p:            
-            scicloudLog.exception("pickling failed on %s of type %s." 
+            cloudLog.exception("pickling failed on %s of type %s." 
                            % (self.lastobj, type(self.lastobj)))
             strio = StringIO()                           
             

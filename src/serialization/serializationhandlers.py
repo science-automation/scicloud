@@ -9,7 +9,7 @@ Copyright (c) 2011 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -33,7 +33,7 @@ try:
 except ImportError:
     from StringIO import StringIO
     
-import scicloudpickle
+import cloudpickle
 import pickledebug
 
 class Serializer(object):
@@ -68,7 +68,7 @@ class CloudSerializer(Serializer):
     """Use clould pickler"""
 
     _pickler = None
-    _pickler_class = scicloudpickle.CloudPickler
+    _pickler_class = cloudpickle.CloudPickler
     os_env_vars = []
     
     def set_os_env_vars(self, os_env_vars):

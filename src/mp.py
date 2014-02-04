@@ -1,16 +1,16 @@
 '''
 Cloud Multiprocessing Interface
 
-scicloud.mp has effectively the same interface as scicloud.
+cloud.mp has effectively the same interface as cloud.
 
 All jobs will be run locally, on multiple processors, via the multiprocessing library
 
 Sample usage::
 
-    import scicloud.mp
-    jid = scicloud.mp.call(lambda: 3*3)
+    import cloud.mp
+    jid = cloud.mp.call(lambda: 3*3)
     >> Returns a job identifier
-    scicloud.mp.result(jid)
+    cloud.mp.result(jid)
     >> Returns 9
 '''
 '''
@@ -22,7 +22,7 @@ Copyright (c) 2010 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -39,10 +39,10 @@ http://www.gnu.org/licenses/lgpl-2.1.html
 
 import sys
 
-import scicloudinterface
-from . import scicloud
+import cloudinterface
+from . import cloud
 
-__scicloud = None
+__cloud = None
 __type = None
 __immutable = False
 
@@ -58,11 +58,11 @@ connection_info = None
 __all__ = ["call", "map", "status", "result", "iresult", "join", "kill", "info", 
            "delete", "connection_info", "finished_statuses", "close","c1","c2","m1"]
 
-def _launch_scicloud():
-    scicloudinterface._setscicloud(sys.modules[__name__], 'mp')
+def _launch_cloud():
+    cloudinterface._setcloud(sys.modules[__name__], 'mp')
     
-_launch_scicloud()
+_launch_cloud()
 
-def _getscicloud():
-    """Return internal scicloud object. Only for internal use"""
-    return __scicloud
+def _getcloud():
+    """Return internal cloud object. Only for internal use"""
+    return __cloud

@@ -9,7 +9,7 @@ Copyright (c) 2010 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -74,7 +74,7 @@ class JobAbstractCacheManager(object):
 
 class JobCacheManager(JobAbstractCacheManager):
     """
-    Simple manager for dealing with scicloud cache
+    Simple manager for dealing with cloud cache
     """
     
     jobMap = None #maps jids to cache

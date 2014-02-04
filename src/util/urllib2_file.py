@@ -93,14 +93,14 @@ except:
     from StringIO import StringIO
 
 import logging
-scicloudLog = logging.getLogger('Cloud.HTTPConnection')
+cloudLog = logging.getLogger('Cloud.HTTPConnection')
 
 
 CHUNK_SIZE = 65536
 
 
 #PiCloud injection for gzip control
-from .. import scicloudconfig as cc
+from .. import cloudconfig as cc
 
 use_gzip = cc.transport_configurable('use_gzip',
                                      default=True,hidden=False,
@@ -445,7 +445,7 @@ class newHTTPAbstractHandler(urllib2.AbstractHTTPHandler):
                 if isinstance(e, socket.error) and getattr(e, 'errno', e.args[0]) == errno.ECONNREFUSED:
                     h.close()
                     raise
-                scicloudLog.info('Error raised by request. reinitiating connection. Exception was:', exc_info=1)
+                cloudLog.info('Error raised by request. reinitiating connection. Exception was:', exc_info=1)
                 h.close()
                 if i == 0:
                     continue
@@ -464,7 +464,7 @@ class newHTTPAbstractHandler(urllib2.AbstractHTTPHandler):
                 #socket closed -- retry?
                 if i == 0 and reusing:
                 #if False:
-                    scicloudLog.info('Reconnecting socket due to:', exc_info=1) 
+                    cloudLog.info('Reconnecting socket due to:', exc_info=1) 
                     h.close()
                     h.connect()
                     continue

@@ -13,7 +13,7 @@ Copyright (c) 2011 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -29,9 +29,9 @@ http://www.gnu.org/licenses/lgpl-2.1.html
 """
 
 
-import scicloud
+import cloud
 import types
-from scicloud.util import fix_time_element
+from cloud.util import fix_time_element
 
 import logging, datetime
 
@@ -62,7 +62,7 @@ def list(request_id=""):
         except ValueError:
             raise TypeError('Optional parameter to list_rt_cores must be a numeric request_id')
     
-    conn = scicloud._getscicloudnetconnection()
+    conn = cloud._getcloudnetconnection()
     rt_list = conn.send_request(_list_query, {'rid': str(request_id)})
     return [fix_time_element(rt,'start_time') for rt in rt_list['requests']]
 
@@ -79,7 +79,7 @@ def request(type, cores, max_duration=None):
         if max_duration <= 0:
             raise TypeError('Optional parameter max_duration should be an integer value > 0')
     
-    conn = scicloud._getscicloudnetconnection()
+    conn = cloud._getcloudnetconnection()
     return fix_time_element(conn.send_request(_request_query, 
                                                {'cores': cores,
                                                 'type' : type,
@@ -95,7 +95,7 @@ def release(request_id):
     except ValueError:
         raise TypeError('release_rt_cores requires a numeric request_id')
     
-    conn = scicloud._getscicloudnetconnection()
+    conn = cloud._getcloudnetconnection()
     conn.send_request(_release_query, {'rid': str(request_id)})
 
 def change_max_duration(request_id, new_max_duration=None):
@@ -111,7 +111,7 @@ def change_max_duration(request_id, new_max_duration=None):
         if new_max_duration <= 0:
             raise TypeError('Optional parameter max_duration should be an integer value > 0')
     
-    conn = scicloud._getscicloudnetconnection()
+    conn = cloud._getcloudnetconnection()
     
     conn.send_request(_change_max_duration_query, {'rid': str(request_id), 'cap_duration':new_max_duration})
 

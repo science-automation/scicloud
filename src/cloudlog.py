@@ -1,5 +1,5 @@
 """
-Cloudlog controls the logging of all scicloud related messages
+Cloudlog controls the logging of all cloud related messages
 
 Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
 
@@ -9,7 +9,7 @@ Copyright (c) 2009 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -29,31 +29,31 @@ import sys
 import logging
 
 
-from . import scicloudconfig as cc
+from . import cloudconfig as cc
 from .util import fix_sudo_path
 
 c = \
-"""Filename where scicloud log messages should be written.
+"""Filename where cloud log messages should be written.
 This path is relative to ~/.picloud/"""
 logFilename = cc.logging_configurable('log_filename',
-                                     default='scicloud.log',  #NOTE: will not create directories
+                                     default='cloud.log',  #NOTE: will not create directories
                                      comment =c)
 c = \
-"""Should log_filename (default of scicloud.log) be written with scicloud log messages?
-Note that scicloud will always emit logging messages; this option controls if scicloud should have its own log."""
+"""Should log_filename (default of cloud.log) be written with cloud log messages?
+Note that cloud will always emit logging messages; this option controls if cloud should have its own log."""
 saveLog = cc.logging_configurable('save_log',
                                  default=True,
                                  comment=c)
 c = \
-"""logging level for scicloud messages.
-This affects both messages saved to the scicloud log file and sent through the python logging system.
+"""logging level for cloud messages.
+This affects both messages saved to the cloud log file and sent through the python logging system.
 See http://docs.python.org/library/logging.html for more information"""
 logLevel = cc.logging_configurable('log_level',
                                   default=logging.getLevelName(logging.DEBUG),
                                   comment=c)
 
 c = \
-"""logging level for printing scicloud log messages to console.
+"""logging level for printing cloud log messages to console.
 Must be equal or higher than log_level"""
 printLogLevel = cc.logging_configurable('print_log_level',
                                   default=logging.getLevelName(logging.ERROR),
@@ -64,7 +64,7 @@ purgeDays = cc.logging_configurable('purge_days',
                                         default=7,
                                         comment =c)
 
-by_pid_dir = 'scicloudlog-by-pid'
+by_pid_dir = 'cloudlog-by-pid'
 
 datefmt = '%a %b %d %H:%M:%S %Y'
 logfmt_main = "[%(asctime)s] - [%(levelname)s] - %(name)s: %(message)s"
@@ -209,7 +209,7 @@ def _init_logging():
             
     return mylog
                                                               
-scicloudLog = _init_logging()
+cloudLog = _init_logging()
 
 
 """verbose mode
@@ -217,7 +217,7 @@ Whether the below functions are sent
 """
 verbose = cc.logging_configurable('verbose',
                                      default=False, 
-                                     comment = "Should scicloud library print informative messages to stdout and stderr",
+                                     comment = "Should cloud library print informative messages to stdout and stderr",
                                      hidden = True)
 
 def stdout(s, auto_newline=True):

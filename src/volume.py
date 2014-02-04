@@ -15,7 +15,7 @@ Copyright (c) 2012 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -39,11 +39,11 @@ import os
 import platform
 import time
 
-import scicloud
-from .scicloudlog import stdout as print_stdout, stderr as print_stderr
+import cloud
+from .cloudlog import stdout as print_stdout, stderr as print_stderr
 from .util import common
 
-scicloudLog = logging.getLogger('Cloud.volume')
+cloudLog = logging.getLogger('Cloud.volume')
 
 plat = platform.system()
 
@@ -99,7 +99,7 @@ def get_list(name=None, desc=False):
     return [common._fix_time_element(v, 'created') for v in v_list['volumes']]
 
 def create(name, mount_path, desc=None):
-    """Creates a new scicloud volume.
+    """Creates a new cloud volume.
         * name:
             name of the new volume (max 64 chars)
         * mount_path:
@@ -113,17 +113,17 @@ def create(name, mount_path, desc=None):
             (optional) description of the volume (max 1024 chars)
     """
     if len(name) < 2:
-        raise scicloud.CloudException('Volume name must be at least 2 characters.')
+        raise cloud.CloudException('Volume name must be at least 2 characters.')
     _send_vol_request('create',
                       {'name': name, 'mnt_path': mount_path,
                        'desc': desc or ''})
-    scicloudLog.debug('created volume %s', name)
+    cloudLog.debug('created volume %s', name)
 
 def mkdir(volume_path, parents=False):
     """Creates directory(ies) at volume_path, if they don't already exist.
 
     * volume_path:
-        A scicloud volume path spec or a list of specs, that indicates the
+        A cloud volume path spec or a list of specs, that indicates the
         directory(ies) to create.
     * parents:
         If True, does not error if the directory already exists, and makes any
@@ -137,14 +137,14 @@ def mkdir(volume_path, parents=False):
     if res.get('modified'):
         _wait_for_release(vol_name)
     msg = 'created %s in volume %s' % (', '.join(vol_paths), vol_name)
-    scicloudLog.debug(msg)
+    cloudLog.debug(msg)
     print_stdout(msg)
 
 def sync(source, dest, delete=False):
-    """Syncs data between a scicloud volumes and the local filesystem.
+    """Syncs data between a cloud volumes and the local filesystem.
 
-    Either *source* or *dest* should specify a scicloud volume path, but not both.
-    A scicloud volume path is of the format:
+    Either *source* or *dest* should specify a cloud volume path, but not both.
+    A cloud volume path is of the format:
 
         volume_name:[path-within-volume]
 
@@ -157,14 +157,14 @@ def sync(source, dest, delete=False):
     presence of a trailing slash.  A trailing slash indicates that the contents
     should be synced, while its absence would lead to the directory itself being
     synced to the volume.  *source* can be a list of paths, all of which should
-    either be local paths, or volume paths in the same scicloud volume.
+    either be local paths, or volume paths in the same cloud volume.
 
     Example::
 
         sync('~/dataset1', 'myvolume1:')
 
     will ensure that a directory named 'dataset1' will exist at the top level
-    of the scicloud volume 'myvolume1', that contains all the contents of
+    of the cloud volume 'myvolume1', that contains all the contents of
     'dataset1'.  On the other hand,
 
         sync('~/dataset1/', 'myvolume1:')
@@ -175,7 +175,7 @@ def sync(source, dest, delete=False):
     If *delete* is True, files that exist in *dest* but not in *source* will be
     deleted.  By default, such files will not be removed.
     """
-    conn = scicloud._getscicloudnetconnection()
+    conn = cloud._getcloudnetconnection()
     retry_attempts = conn.retry_attempts
     dest_is_local = common.is_local_path(dest)
     l_paths, r_paths = (dest, source) if dest_is_local else (source, dest)
@@ -183,7 +183,7 @@ def sync(source, dest, delete=False):
     vol_name, vol_paths = common.parse_remote_paths(r_paths)
     for vol_path in vol_paths:
         if os.path.isabs(vol_path):
-            raise scicloud.CloudException('Volume path cannot be absolute')
+            raise cloud.CloudException('Volume path cannot be absolute')
     
     # acquire syncslot and syncserver info to complete the real remote paths
     success = release = False
@@ -191,7 +191,7 @@ def sync(source, dest, delete=False):
     syncserver, syncslot = _acquire_syncslot(vol_name)
 
     try:
-        scicloudLog.debug('Acquired syncslot %s on server %s', syncslot, syncserver)
+        cloudLog.debug('Acquired syncslot %s on server %s', syncslot, syncserver)
         r_base = '%s@%s:volume/' % (syncslot, syncserver)
         r_paths = ' '.join(['%s%s' % (r_base, v_path) for v_path in vol_paths])
         l_paths = ' '.join(local_paths)
@@ -202,17 +202,17 @@ def sync(source, dest, delete=False):
                                                              delete=delete)
             if not exit_code:
                 break
-            scicloudLog.error('sync attempt failed:\n%s', stderr)
+            cloudLog.error('sync attempt failed:\n%s', stderr)
             print_stdout(str(stderr))
             print_stdout('Retrying volume sync...')
         else:
             raise Exception('sync failed multiple attempts... '
                             'Please contact PiCloud support')
     except KeyboardInterrupt:
-        scicloudLog.error('Sync interrupted by keyboard')
+        cloudLog.error('Sync interrupted by keyboard')
         print 'Sync interrupted by keyboard'
     except Exception as e:
-        scicloudLog.error('Sync errored with:\n%s', e)
+        cloudLog.error('Sync errored with:\n%s', e)
         print e
     finally:
         print_stdout('Cleanup...')
@@ -229,19 +229,19 @@ def sync(source, dest, delete=False):
     if success:
         print_stdout('Sync successfully completed.')
     else:
-        raise scicloud.CloudException('Volume sync failed with error code %s. '
-                                   'See scicloud.log' % exit_code)
+        raise cloud.CloudException('Volume sync failed with error code %s. '
+                                   'See cloud.log' % exit_code)
 
 def delete(name):
     """Deletes the scivm volume identified by *name*."""
     _send_vol_request('delete', {'name': name})
-    scicloudLog.debug('deleted volume %s', name)
+    cloudLog.debug('deleted volume %s', name)
 
 def ls(volume_path, extended_info=False):
     """Lists the contents at *volume_path*.
     
     * volume_path:
-        A scicloud volume path spec or a list of specs, whose contents are to be
+        A cloud volume path spec or a list of specs, whose contents are to be
         returned.
     * extended_info:
         If True, in addition to the names of files and directories comprising
@@ -271,7 +271,7 @@ def rm(volume_path, recursive=False):
     """Removes contents at *volume_path*.
     
     * volume_path:
-        A scicloud volume path spec or a list of specs, whose contents are to be
+        A cloud volume path spec or a list of specs, whose contents are to be
         removed.
     * recursive:
         If True, will remove the contents at *volume_path* recursively, if it
@@ -286,7 +286,7 @@ def rm(volume_path, recursive=False):
                              'recursive': recursive})
     if res.get('modified'):
         _wait_for_release(vol_name)
-    scicloudLog.debug('removed %s from volume %s', ', '.join(vol_paths), vol_name)
+    cloudLog.debug('removed %s from volume %s', ', '.join(vol_paths), vol_name)
 
 def _acquire_syncslot(volume_name):
     """Requests syncslot from PiCloud.  Current behavior is to try 12 times,
@@ -308,13 +308,13 @@ def _acquire_syncslot(volume_name):
     print_stdout('')
     
     if status == _SYNC_NOVACANCY:
-        scicloudLog.error('No available syncslot')
-        raise scicloud.CloudException('Volume sync is unavailable at the moment.  '
+        cloudLog.error('No available syncslot')
+        raise cloud.CloudException('Volume sync is unavailable at the moment.  '
                                    'Please try again in a few minutes.  '
                                    'We Apologize for the inconvenience.')
     if status == _SYNC_ERROR:
-        scicloudLog.error('Error acquiring syncslot')
-        raise scicloud.CloudException('Could not complete volume sync.  '
+        cloudLog.error('Error acquiring syncslot')
+        raise cloud.CloudException('Could not complete volume sync.  '
                                    'Please contact PiCloud support.')
 
     return res.get('syncserver'), res.get('syncslot')
@@ -325,7 +325,7 @@ def _wait_for_release(volume_name, wait_interval=3):
         res = _send_vol_request('check_release', {'name': volume_name})
         status = res['status']
         if status == _RELEASE_ERROR:
-            raise scicloud.CloudException('Sync failed on volume %s' % volume_name)
+            raise cloud.CloudException('Sync failed on volume %s' % volume_name)
         if status == _RELEASE_DONE:
             break
         time.sleep(3)

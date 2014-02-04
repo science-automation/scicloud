@@ -1,8 +1,8 @@
 """
-This module, has the function writeConfig, to generate a scicloudconf.py file
+This module, has the function writeConfig, to generate a cloudconf.py file
 If invoked at the command-line, the default config will be written
 
-Note: You need to manually wipe scicloudconf.py before using this!
+Note: You need to manually wipe cloudconf.py before using this!
 
 Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
 
@@ -12,7 +12,7 @@ Copyright (c) 2010 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -33,11 +33,11 @@ def writeConfig(withHidden = False):
     """Direct configmanager to write config
     withHidden controls if hidden variables should be written"""
       
-    import scicloud.scicloudconfig as cc    
+    import cloud.cloudconfig as cc    
     cc._needsWrite = False
     cc.genHidden = withHidden
     
-    from scicloud.util.configmanager import ConfigSettings
+    from cloud.util.configmanager import ConfigSettings
     config = ConfigSettings(cc.config,do_reload=True)
     cc.flush_config()
             

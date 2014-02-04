@@ -1,5 +1,5 @@
 """
-running_on_scicloud version of bucket interface that accesses /bucket mount point to do bucket operations
+running_on_cloud version of bucket interface that accesses /bucket mount point to do bucket operations
 Do NOT directly use this in your own code!
 """
 from __future__ import with_statement
@@ -28,7 +28,7 @@ Copyright (c) 2013 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -48,9 +48,9 @@ import errno
 import os
 import time
 import logging
-from .scicloud import CloudException, CloudTimeoutError
+from .cloud import CloudException, CloudTimeoutError
 
-scicloudLog = logging.getLogger('Cloud.bucket')
+cloudLog = logging.getLogger('Cloud.bucket')
 
 # base implementation of bucket 
 from . import bucket as base_bucket
@@ -90,7 +90,7 @@ def _retry_op(func, excp_class=Exception, _num_retries=2):
             if retry_cnt == _num_retries:
                 raise
             else:
-                scicloudLog.warning('Received exception %s:%s. Retrying', 
+                cloudLog.warning('Received exception %s:%s. Retrying', 
                                  type(e), str(e), exc_info=True)
                 time.sleep(0.2)
                 continue
@@ -124,7 +124,7 @@ def putf(f, obj_path, prefix=None, _buffersize = 16384):
         raise IOError('File object is not seekable. Cannot transmit')
 
     if fsize > 5000000000:
-        raise ValueError('Cannot store bucket objects larger than 5GB on scicloud.bucket')
+        raise ValueError('Cannot store bucket objects larger than 5GB on cloud.bucket')
     
     if fsize == 0:
         raise ValueError('Cannot store empty bucket objects')
@@ -156,7 +156,7 @@ def put(file_path, obj_path=None, prefix=None):
     
 # Serverside md5 computation will take too long to be worthwhile, just always do a put
 #  TODO: With boss signing, md5 checks may be doiable
-sync_to_scicloud = put
+sync_to_cloud = put
     
 def exists(obj_path, prefix=None):
     bucket_path = _get_bucket_path(obj_path, prefix)
@@ -194,14 +194,14 @@ def get(obj_path, file_path=None, prefix=None, start_byte=0, end_byte=None, _ret
     file_path = _ready_file_path(file_path, obj_path)    
 
     # with s3fs, we are effectively doing a copy
-    scicloud_file = getf(obj_path, prefix, 0, None)
+    cloud_file = getf(obj_path, prefix, 0, None)
     
     chunk_size = 16384
     
     f = open(file_path, 'wb')
     
     while True:
-        data = scicloud_file.read(chunk_size)
+        data = cloud_file.read(chunk_size)
         if not data:
             break
         f.write(data)
@@ -209,7 +209,7 @@ def get(obj_path, file_path=None, prefix=None, start_byte=0, end_byte=None, _ret
     f.close()
     
 # always get on server (md5 check takes too long)
-sync_from_scicloud = get        
+sync_from_cloud = get        
 
 """get logic"""
 
@@ -320,6 +320,6 @@ def mpsafe_get(obj_path, file_path=None, prefix=None, start_byte=0, end_byte=Non
     if not fsize: # download
         get(obj_path, file_path, prefix, start_byte, end_byte)
     elif do_sync:
-        sync_from_scicloud(obj_path, file_path, prefix)         
+        sync_from_cloud(obj_path, file_path, prefix)         
     
     fobj.close()  # releases lock

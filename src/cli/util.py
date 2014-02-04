@@ -154,7 +154,7 @@ def volume_ls_printer(listings, print_headers=False, kwargs={}):
 
     
             
-def scicloud_info_printer(info_results, print_headers, kwargs):
+def cloud_info_printer(info_results, print_headers, kwargs):
     """Dump contents"""
     
     base_ordering = ['status', 'exception', 'stdout', 'stderr', 'runtime', 
@@ -205,7 +205,7 @@ def bucket_info_printer(bucket_info_result, print_headers, kwargs):
         else:
             safe_print('%s: %s' % (info_key, result))            
 
-def scicloud_result_printer(results, print_headers, kwargs):
+def cloud_result_printer(results, print_headers, kwargs):
     started = False
     if len(results) == 1: # if just one result, print it directly (allows binary data to be written)
         val = results.values()[0]
@@ -225,7 +225,7 @@ def scicloud_result_printer(results, print_headers, kwargs):
                 safe_print(result) 
 
     
-def scicloud_result_json_printer(results, print_headers, kwargs):
+def cloud_result_json_printer(results, print_headers, kwargs):
     """Values of results may already json encoded, hence the need for a special printer"""
     print '{',
     started = False 
