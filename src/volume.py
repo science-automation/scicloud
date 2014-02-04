@@ -26,8 +26,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
-License along with this package; if not, see 
-http://www.gnu.org/licenses/lgpl-2.1.html    
+License along with this package; if not, see
+http://www.gnu.org/licenses/lgpl-2.1.html
 """
 try:
     import json
@@ -39,7 +39,7 @@ import os
 import platform
 import time
 
-import cloud
+import scicloud as cloud
 from .cloudlog import stdout as print_stdout, stderr as print_stderr
 from .util import common
 
@@ -171,7 +171,7 @@ def sync(source, dest, delete=False):
 
     will copy all the contents of 'dataset1' to the top level of 'myvolume1'.
     This behavior mirrors the file-copying tool 'rsync'.
-    
+
     If *delete* is True, files that exist in *dest* but not in *source* will be
     deleted.  By default, such files will not be removed.
     """
@@ -184,7 +184,7 @@ def sync(source, dest, delete=False):
     for vol_path in vol_paths:
         if os.path.isabs(vol_path):
             raise cloud.CloudException('Volume path cannot be absolute')
-    
+
     # acquire syncslot and syncserver info to complete the real remote paths
     success = release = False
     exit_code = -1
@@ -239,7 +239,7 @@ def delete(name):
 
 def ls(volume_path, extended_info=False):
     """Lists the contents at *volume_path*.
-    
+
     * volume_path:
         A cloud volume path spec or a list of specs, whose contents are to be
         returned.
@@ -247,7 +247,7 @@ def ls(volume_path, extended_info=False):
         If True, in addition to the names of files and directories comprising
         the contents of the volume_path, the size (in bytes) and the modified
         times are returned. (Default is False)
-    
+
     Returns a list of tuples, one for each volume path specified.  The first
     element of the tuple is the volume path spec, and the second element of the
     tuple is a list of dictionaries for each file or directory present in the
@@ -269,7 +269,7 @@ def ls(volume_path, extended_info=False):
 
 def rm(volume_path, recursive=False):
     """Removes contents at *volume_path*.
-    
+
     * volume_path:
         A cloud volume path spec or a list of specs, whose contents are to be
         removed.
@@ -306,7 +306,7 @@ def _acquire_syncslot(volume_name):
             status = _SYNC_ERROR
         break
     print_stdout('')
-    
+
     if status == _SYNC_NOVACANCY:
         cloudLog.error('No available syncslot')
         raise cloud.CloudException('Volume sync is unavailable at the moment.  '

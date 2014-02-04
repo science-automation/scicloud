@@ -1,111 +1,111 @@
-"""
-Science VM environment management.
-This module allows the user to manage their environments on Science VM.
-See documentation at http://docs.scivm.com
-"""
-from __future__ import absolute_import
-"""
-Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
-
-email: support@scivm.com
-
-Copyright (c) 2013 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
-
-email: contact@picloud.com
-
-The cloud package is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
-
-This package is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this package; if not, see 
-http://www.gnu.org/licenses/lgpl-2.1.html    
-"""
-try:
-    import json
-except:
-    # Python 2.5 compatibility
-    import simplejson as json
-import logging
-import platform
-import random
-import re
-import sys
-import string
-import time
-
-import cloud
-from .cloudlog import stdout as print_stdout, stderr as print_stderr
-from .util import credentials
-from .util import common
-
-cloudLog = logging.getLogger('Cloud.environment')
-
-plat = platform.system()
-
-_urls = {'list': 'environment/list/',
-         'list_bases': 'environment/list_bases/',
-         'create': 'environment/create/',
-         'edit_info': 'environment/edit_info/',
-         'modify': 'environment/modify/',
-         'save': 'environment/save/',
-         'save_shutdown': 'environment/save_shutdown/',
-         'shutdown': 'environment/shutdown/',
-         'clone': 'environment/clone/',
-         'delete': 'environment/delete/',
-         }
-
-# environment status types
-_STATUS_CREATING = 'new'
-_STATUS_READY = 'ready'
-_STATUS_ERROR = 'error'
-
-# environment action types
-_ACTION_IDLE = 'idle'
-_ACTION_SETUP = 'setup'
-_ACTION_EDIT = 'edit'
-_ACTION_SAVE = 'save'
-_ACTION_SETUP_ERROR = 'setup_error'
-_ACTION_SAVE_ERROR = 'save_error'
-
-
-def _send_env_request(request_type, data, jsonize_values=True):
-    type_url = _urls.get(request_type)
-    if type_url is None:
-        raise LookupError('Invalid env request type %s' % request_type)
-    return common._send_request(type_url, data, jsonize_values)
-
-"""
-environment management
-"""
-def list_envs(name=None):
-    """Returns a list of dictionaries describing user's environments.
-    If *name* is given, only shows info for the environment with that name.
-
-    Environment information is returned as list of dictionaries.  The keys
-    within each returned dictionary are:
-
-    * name: name of the environment
-    * status: status of the environment
-    * action: the action state of the environment (e.g. under edit)
-    * created: time when the environment was created
-    * last_modifed: last time a modification was saved
-    * hostname: hostname of setup server if being modified
-    * setup_time: time setup server has been up if being modified
     """
-    resp = _send_env_request('list', {'env_name': name})
-    return [common._fix_time_element(env, ['created', 'last_modified'])
-            for env in resp['envs_list']]
+    Science VM environment management.
+    This module allows the user to manage their environments on Science VM.
+    See documentation at http://docs.scivm.com
+    """
+    from __future__ import absolute_import
+    """
+    Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
 
-def list_bases():
-    """Returns a list of dictionaries describing available bases. The keys
-    within each returned dictionary are:
+    email: support@scivm.com
+
+    Copyright (c) 2013 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
+
+    email: contact@picloud.com
+
+    The cloud package is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This package is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this package; if not, see
+    http://www.gnu.org/licenses/lgpl-2.1.html
+    """
+    try:
+        import json
+    except:
+        # Python 2.5 compatibility
+        import simplejson as json
+    import logging
+    import platform
+    import random
+    import re
+    import sys
+    import string
+    import time
+
+    import scicloud as cloud
+    from .cloudlog import stdout as print_stdout, stderr as print_stderr
+    from .util import credentials
+    from .util import common
+
+    cloudLog = logging.getLogger('Cloud.environment')
+
+    plat = platform.system()
+
+    _urls = {'list': 'environment/list/',
+             'list_bases': 'environment/list_bases/',
+             'create': 'environment/create/',
+             'edit_info': 'environment/edit_info/',
+             'modify': 'environment/modify/',
+             'save': 'environment/save/',
+             'save_shutdown': 'environment/save_shutdown/',
+             'shutdown': 'environment/shutdown/',
+             'clone': 'environment/clone/',
+             'delete': 'environment/delete/',
+             }
+
+    # environment status types
+    _STATUS_CREATING = 'new'
+    _STATUS_READY = 'ready'
+    _STATUS_ERROR = 'error'
+
+    # environment action types
+    _ACTION_IDLE = 'idle'
+    _ACTION_SETUP = 'setup'
+    _ACTION_EDIT = 'edit'
+    _ACTION_SAVE = 'save'
+    _ACTION_SETUP_ERROR = 'setup_error'
+    _ACTION_SAVE_ERROR = 'save_error'
+
+
+    def _send_env_request(request_type, data, jsonize_values=True):
+        type_url = _urls.get(request_type)
+        if type_url is None:
+            raise LookupError('Invalid env request type %s' % request_type)
+        return common._send_request(type_url, data, jsonize_values)
+
+    """
+    environment management
+    """
+    def list_envs(name=None):
+        """Returns a list of dictionaries describing user's environments.
+        If *name* is given, only shows info for the environment with that name.
+
+        Environment information is returned as list of dictionaries.  The keys
+        within each returned dictionary are:
+
+        * name: name of the environment
+        * status: status of the environment
+        * action: the action state of the environment (e.g. under edit)
+        * created: time when the environment was created
+        * last_modifed: last time a modification was saved
+        * hostname: hostname of setup server if being modified
+        * setup_time: time setup server has been up if being modified
+        """
+        resp = _send_env_request('list', {'env_name': name})
+        return [common._fix_time_element(env, ['created', 'last_modified'])
+                for env in resp['envs_list']]
+
+    def list_bases():
+        """Returns a list of dictionaries describing available bases. The keys
+        within each returned dictionary are:
 
     * id: id of the base (to be used when referencing bases in other functions)
     * name: brief descriptive name of the base
@@ -187,9 +187,9 @@ def modify(name):
 def save(name):
     """Saves the current modified version of the environment, without tearing
     down the setup server.
-    
+
     * name: name of the environment to save
-    
+
     This is a blocking function.  When it returns without errors, the new
     version of the environment is available for use by all workers.
     """
@@ -200,9 +200,9 @@ def save(name):
 def save_shutdown(name):
     """Saves the current modified version of the environment, and tears down
     the setup server when saving is done.
-    
+
     * name: name of the environment to save
-    
+
     This is a blocking function.  When it returns without errors, the new
     version of the environment is available for use by all workers.
     """
@@ -212,7 +212,7 @@ def save_shutdown(name):
 
 def shutdown(name):
     """Tears down the setup server without saving the environment modification.
-    
+
     * name: name of the environment to save
     """
     resp = _send_env_request('shutdown', {'env_name': name})
@@ -249,7 +249,7 @@ def clone(parent_name, new_name=None, new_desc=None):
 
 def delete(name):
     """Deletes and existing environment.
-    
+
     * name: Name of the environment to save
     """
     resp = _send_env_request('delete', {'env_name': name})
@@ -259,7 +259,7 @@ def get_setup_hostname(name):
     """Returns the hostname of the setup server where environment can be
     modified.  raises exception if the environment does not have a setup server
     already launched.
-    
+
     * name: name of the environment whose setup server hostname is desired
     """
     env_info = wait_for_edit(name, _ACTION_IDLE)
@@ -274,7 +274,7 @@ def get_key_path():
 
 def ssh(name, cmd=None):
     """Creates an ssh session to the environment setup server.
-    
+
     * name: Name of the environment to make an ssh connection
     * cmd: By default, this function creates an interactive ssh session.
         If cmd is given, however, it executes the cmd on the setup server
@@ -288,7 +288,7 @@ def ssh(name, cmd=None):
         if stdout:
             sys.stdout.write(stdout)
         if stderr:
-            sys.stderr.write(stderr)        
+            sys.stderr.write(stderr)
         sys.exit(status)
 
     if cmd and stdout:
@@ -310,11 +310,11 @@ def rsync(src_path, dest_path, delete=False, pipe_output=False):
 
     Note that the colon is what indicates this is an environment path
     specification.
-    
+
     *src_path* can be a list of paths, all of which should either be local
     paths, or environment paths. If *src_path* is a directory, a trailing slash
     indicates that its contents should be rsynced, while ommission of slash
-    would lead to the directory itself being rsynced to the environment. 
+    would lead to the directory itself being rsynced to the environment.
 
     Example::
 
@@ -327,7 +327,7 @@ def rsync(src_path, dest_path, delete=False, pipe_output=False):
 
     will copy all the contents of 'dataset1' to the home directory of user
     scivm. See rsync manual for more information.
-    
+
     If *delete* is True, files that exist in *dest_path* but not in *src_path*
     will be deleted.  By default, such files will not be removed.
     """
@@ -338,7 +338,7 @@ def rsync(src_path, dest_path, delete=False, pipe_output=False):
                         (src_path, dest_path))
     local_paths = common.parse_local_paths(l_paths)
     env_name, env_paths = common.parse_remote_paths(r_paths)
-    
+
     hostname = get_setup_hostname(env_name)
     try:
         r_base = 'scivm@%s:' % hostname
@@ -361,7 +361,7 @@ def rsync(src_path, dest_path, delete=False, pipe_output=False):
 
 def run_script(name, filename):
     """Runs a script on the environment setup server, and returns the output.
-    
+
     * name: Environment whose setup server should run the script
     filename: local path where the script to be run can be found
     """
@@ -399,7 +399,7 @@ def _wait_for(name, action, invalid_actions=None, poll_frequency=2,
     invalid_actions = invalid_actions or []
     if not hasattr(invalid_actions, '__iter__'):
         invalid_actions = [invalid_actions]
-    
+
     for _ in xrange(max_poll_duration / poll_frequency):
         resp = list_envs(name)
 
@@ -430,6 +430,6 @@ def _wait_for(name, action, invalid_actions=None, poll_frequency=2,
             pass
 
         time.sleep(poll_frequency)
-        
+
     raise cloud.CloudException('Environment operation timed out. '
                                'Please contact PiCloud support.')

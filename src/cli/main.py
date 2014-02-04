@@ -22,8 +22,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
-License along with this package; if not, see 
-http://www.gnu.org/licenses/lgpl-2.1.html    
+License along with this package; if not, see
+http://www.gnu.org/licenses/lgpl-2.1.html
 """
 
 import sys
@@ -36,7 +36,7 @@ except:
     # Python 2.5 compatibility
     import simplejson as json
 
-import cloud
+import scicloud as cloud
 from UserDict import DictMixin
 
 from . import argparsers
@@ -51,27 +51,27 @@ from . import functions
 def main(args=None):
     """Entry point for PiCloud CLI. If *args* is None, it is assumed that main()
     was called from the command-line, and sys.argv is used."""
-    
+
     args = args or sys.argv[1:]
-        
+
     # special case: we want to provide the full help information
     # if the cli is run with no arguments
     if len(args) == 0:
         argparsers.scivm_parser.print_help()
         sys.exit(1)
-    
+
     # special case: if --version is specified at all, print it out
     if '--version' in args:
         print 'cloud %s' % cloud.__version__
         print 'running under python %s' % sys.version
         sys.exit(0)
-        
+
     # parse_args is an object whose attributes are populated by the parsed args
     parsed_args = argparsers.scivm_parser.parse_args(args)
     module_name = getattr(parsed_args, '_module', '')
     command_name = getattr(parsed_args, '_command', '')
     function_name = module_name + ('.%s' % command_name if command_name else '')
-        
+
     if function_name != 'setup':
         # using showhidden under setup will cause config to be flushed with hidden variables
         cloud.config._showhidden()
@@ -84,23 +84,23 @@ def main(args=None):
     if parsed_args._api_secretkey:
         cloud.config.api_secretkey = parsed_args._api_secretkey
     if parsed_args._simulate:
-        cloud.config.use_simulator = parsed_args._simulate     
+        cloud.config.use_simulator = parsed_args._simulate
     cloud.config.commit()
-        
+
     # we take the attributes from the parsed_args object and pass them in
     # as **kwargs to the appropriate function. attributes with underscores
     # are special, and thus we filter them out.
     kwargs = dict([(k, v) for k,v in parsed_args._get_kwargs() if not k.startswith('_')])
-                
-    # handle post-op 
+
+    # handle post-op
     for key, value in kwargs.items():
         if callable(value):
             kwargs[key] = value(**kwargs)
 
-    
+
     # we keep function_mapping and printer_mapping here to prevent
     # circular imports
-    
+
     # maps the output of the parser to what function should be called
     function_mapping = {'setup': setup_machine,
                         'exec': functions.execute,
@@ -109,7 +109,7 @@ def main(args=None):
                         'join': functions.join,
                         'result': functions.result,
                         'info': functions.info,
-                        'kill': functions.kill,                        
+                        'kill': functions.kill,
                         'delete': functions.delete,
                         'ssh-info': cloud.shortcuts.ssh.get_ssh_info,
                         'ssh' : functions.ssh,
@@ -119,7 +119,7 @@ def main(args=None):
                         'rest.list' : cloud.rest.list,
                         'rest.info' : cloud.rest.info,
                         'rest.invoke' : functions.rest_invoke,
-                        'rest.mapinvoke' : functions.rest_invoke_map,                                                
+                        'rest.mapinvoke' : functions.rest_invoke_map,
                         'files.get': cloud.files.get,
                         'files.put': cloud.files.put,
                         'files.list': cloud.files.list,
@@ -178,7 +178,7 @@ def main(args=None):
                         'wait-for.status' : cloud.wait_for.status,
                         'wait-for.port' : cloud.wait_for.port,
                         }
-    
+
     # maps the called function to another function for printing the output
     printer_mapping = {'status' : key_val_printer('jid', 'status'),
                        'info' : cloud_info_printer,
@@ -205,16 +205,16 @@ def main(args=None):
                        'cron.info' : dict_printer(['label', 'schedule', 'last_run', 'last_jid', 'created', 'creator_host', 'func_name']),
                        'wait-for.port' : dict_printer(['address', 'port']),
                        }
-    
+
     json_printer_mapping = {'result' : cloud_result_json_printer}
 
     try:
         # execute function
-        ret = function_mapping[function_name](**kwargs) 
+        ret = function_mapping[function_name](**kwargs)
 
         if parsed_args._output == 'json':
             # ordereddict issue.. fix once we on 2.7 only
-            if (isinstance(ret, dict) or isinstance(ret, DictMixin)) and type(ret) != dict: 
+            if (isinstance(ret, dict) or isinstance(ret, DictMixin)) and type(ret) != dict:
                 ret = dict(ret)
             json_printer = json_printer_mapping.get(function_name)
             if json_printer:
@@ -237,7 +237,7 @@ def main(args=None):
                 else:
                     # if the output is None, print nothing
                     pass
-            
+
     except cloud.CloudException, e:
         if parsed_args._output == 'json':
             sys.stderr.write( json.dumps(e.args ) )
@@ -245,12 +245,12 @@ def main(args=None):
             # error thrown by cloud client library)
             sys.stderr.write(str(e)+'\n')
             sys.exit(3)
-        
+
     except Exception, e:
         # unexpected errors
         sys.stderr.write('Got unexpected error\n')
         traceback.print_exc(file = sys.stderr)
         sys.exit(1)
-        
+
     else:
         sys.exit(0)
