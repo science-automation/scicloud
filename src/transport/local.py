@@ -21,7 +21,7 @@ Copyright (c) 2011 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -55,16 +55,16 @@ from multiprocessing.managers import BaseManager, State, Server, Token, AutoProx
 from multiprocessing.pool import Pool
 import multiprocessing.pool as pool
 from multiprocessing.util import Finalize, debug, _run_finalizers
-#todo: Set debug to use scicloudLog?
+#todo: Set debug to use cloudLog?
 
-from ..scicloud import CloudException, CloudTimeoutError
+from ..cloud import CloudException, CloudTimeoutError
 from ..serialization import deserialize
 from ..util.xrange_helper import maybe_xrange_iter
 from .connection import CloudConnection
 from .adapter import SerializingAdapter
-from .. import scicloudconfig as cc
+from .. import cloudconfig as cc
 import logging
-scicloudLog = logging.getLogger('Cloud.mp') 
+cloudLog = logging.getLogger('Cloud.mp') 
 
 use_profiler = False   #For internal testing use
 
@@ -102,7 +102,7 @@ class KilledException(Exception):
 # Code run by worker processes
 # Modified from base mp to notify when starting to process and receive backoff messages
 #
-def scicloud_worker(inqueue, outqueue, scicloudHooks, mypid = 0, redirect_job_output=True, 
+def cloud_worker(inqueue, outqueue, cloudHooks, mypid = 0, redirect_job_output=True, 
                  serialize_debugging = False, serialize_logging = False,
                  api_key=None, api_secretkey=None):
     put = outqueue.put
@@ -112,16 +112,16 @@ def scicloud_worker(inqueue, outqueue, scicloudHooks, mypid = 0, redirect_job_ou
         outqueue._reader.close()
 
     #bind last keys:
-    from .. import scicloudinterface
-    scicloudinterface.last_api_key = api_key
-    scicloudinterface.last_api_secretkey = api_secretkey
+    from .. import cloudinterface
+    cloudinterface.last_api_key = api_key
+    cloudinterface.last_api_secretkey = api_secretkey
     
-    new_scicloud = patch_scicloud(scicloudHooks, mypid)
-    adapter = new_scicloud.adapter
+    new_cloud = patch_cloud(cloudHooks, mypid)
+    adapter = new_cloud.adapter
     report = adapter.report   
     
     if not report and redirect_job_output:  #disable redirection!
-        scicloudLog.warn('Cannot redirect Job Output due to report construction failing. Falling back to console output')
+        cloudLog.warn('Cannot redirect Job Output due to report construction failing. Falling back to console output')
         redirect_job_output = False 
     
     #options:
@@ -207,7 +207,7 @@ def scicloud_worker(inqueue, outqueue, scicloudHooks, mypid = 0, redirect_job_ou
             tb = traceback.format_exc()       
             excp_type = type(e)
             # hack: Sometimes custom tyoes aren't serializable. So just fallback to Exception for safety 
-            if excp_type.__module__ not in ['exceptions', 'scicloud.transport.local']:
+            if excp_type.__module__ not in ['exceptions', 'cloud.transport.local']:
                 excp_type = Exception                
             result = (excp_type, tb)
         finally:
@@ -226,26 +226,26 @@ def scicloud_worker(inqueue, outqueue, scicloudHooks, mypid = 0, redirect_job_ou
         put((job, endTime - startTime, result))
 
 def sigterm_handler(signum, frame):
-    """Handler for preserving tracebacks on scicloud.kill"""
-    scicloudLog.info('Signal handler called with signal %s', signum)    
+    """Handler for preserving tracebacks on cloud.kill"""
+    cloudLog.info('Signal handler called with signal %s', signum)    
     signal.signal(signal.SIGINT, signal.SIG_DFL)  #back to default                       
     raise KilledException('Job terminated by user')
 
 
 handlerInit = False
 def setupLogHandlers():
-    """Debug statements to bind multiprocessing to scicloudlog"""        
+    """Debug statements to bind multiprocessing to cloudlog"""        
     
     global handlerInit
     if handlerInit:
         return
-    handlers = scicloudLog.parent.handlers #found in main scicloudlog
+    handlers = cloudLog.parent.handlers #found in main cloudlog
     
     from multiprocessing import get_logger
     
     mplogger = get_logger()
    
-    mplogger.setLevel(3) #bind to scicloudlog
+    mplogger.setLevel(3) #bind to cloudlog
        
     for handler in handlers:
         mplogger.addHandler(handler)
@@ -322,7 +322,7 @@ class CloudJob(object):
         try:
             self._pool._task_sem.release()
         except ValueError, e: 
-            scicloudLog.debug('Semaphore release triggered %s', str(e))
+            cloudLog.debug('Semaphore release triggered %s', str(e))
         del self._pool.cache[self._jid]
     
     def _set(self, extra_data, sobj):
@@ -340,14 +340,14 @@ class CloudJob(object):
             try:
                 self._pool._task_sem.release()
             except ValueError, e: 
-                scicloudLog.debug('Semaphore release triggered %s', str(e))
+                cloudLog.debug('Semaphore release triggered %s', str(e))
 
             
             if self.killMe: #important: this check must come AFTER processing set
-                scicloudLog.debug("Auto-Killing job after started processing. jid=%d, label=%s, func=%s, " % (self.jid, self.label, self.func_name))
+                cloudLog.debug("Auto-Killing job after started processing. jid=%d, label=%s, func=%s, " % (self.jid, self.label, self.func_name))
                 self._pool._do_job_kill(self)
             else:
-                scicloudLog.debug("Processing job. jid=%d, label=%s, func=%s, " % (self.jid, self.label, self.func_name))            
+                cloudLog.debug("Processing job. jid=%d, label=%s, func=%s, " % (self.jid, self.label, self.func_name))            
             return                               
         
         if self.status in ran_statuses: #killed?
@@ -366,7 +366,7 @@ class CloudJob(object):
                 self._status = status_error
             
 
-        scicloudLog.debug("Finished job. jid=%d, label=%s, func=%s, status=%s, runtime=%g" % (self.jid, self.label, self.func_name, self.status,  self.runtime))            
+        cloudLog.debug("Finished job. jid=%d, label=%s, func=%s, status=%s, runtime=%g" % (self.jid, self.label, self.func_name, self.status,  self.runtime))            
         
         self._pool.notify_job_done(self._jid)
         
@@ -397,7 +397,7 @@ class ThreadedServer(Server):
                     try:
                         c = self.listener.accept()
                     except socket.timeout:
-                        scicloudLog.debug('Timeout triggered')
+                        cloudLog.debug('Timeout triggered')
                     except (OSError, IOError):
                         continue
                     if self.destroy_self:
@@ -408,7 +408,7 @@ class ThreadedServer(Server):
                             self.close_at = time.time() + self.close_wait_time
                             #massive hack: allow accept to abort with a timeout
                             self.listener._listener._socket.settimeout(self.close_wait_time)                            
-                            scicloudLog.debug('Threaded server will shut down at %s', self.close_at)
+                            cloudLog.debug('Threaded server will shut down at %s', self.close_at)
                     t = threading.Thread(target=self.handle_request, args=(c,), name='handle_request')
                     t.daemon = True
                     t.start()
@@ -417,7 +417,7 @@ class ThreadedServer(Server):
         finally:
             self.stop = 999
             self.listener.close()
-            scicloudLog.info('ThreadedServer shut down. destroy_self was %s' % self.destroy_self)
+            cloudLog.info('ThreadedServer shut down. destroy_self was %s' % self.destroy_self)
            
 class MPManager(BaseManager):
     """Modified to run in same thread as initializer
@@ -450,7 +450,7 @@ class MPManager(BaseManager):
         cls.server = cls._Server(registry, address, authkey, serializer)
 
         # run the manager
-        scicloudLog.debug('Mpmanager serving at %r', cls.server.address)
+        cloudLog.debug('Mpmanager serving at %r', cls.server.address)
                
         with cls.waitCV:
             cls.waitCV.notify()
@@ -479,7 +479,7 @@ class MPManager(BaseManager):
             self.__class__.waitCV.wait()
 
         ident = self._thread.ident if hasattr(self._thread,'ident') else '' #python 2.5 lacks ident
-        scicloudLog.debug('Manager started with thread ident %s' % ident)
+        cloudLog.debug('Manager started with thread ident %s' % ident)
         self._thread.name = type(self).__name__  + '-' + str(ident)
         self._address = self.__class__.server.address  
         
@@ -491,37 +491,37 @@ class MPManager(BaseManager):
         Closing is tricky, due to risk of receiving on a dead connection
         Strategy we use is to force mpmanager to wait a little before fully closing"""
         
-        scicloudLog.debug('Starting pool close')
+        cloudLog.debug('Starting pool close')
         self.__class__.server.destroy_self = True            
         
         try:
             conn = self._Client(self._address) #do not attempt to receive data as connection may be dead
         except (IOError, EOFError): #all good
             if not self._thread.is_alive():                
-                scicloudLog.debug('MpManager successfully shut down early')
+                cloudLog.debug('MpManager successfully shut down early')
             else:    
-                scicloudLog.warning('MPManager Thread alive but cannot bind to %s', self._address, exc_info=True)                    
+                cloudLog.warning('MPManager Thread alive but cannot bind to %s', self._address, exc_info=True)                    
         except Exception:
-            scicloudLog.debug('Cloud not bind to %s.' % self._address, exc_info=True)
+            cloudLog.debug('Cloud not bind to %s.' % self._address, exc_info=True)
         else: 
             try:                
-                scicloudLog.debug('Client to server shutdown %s' % self._address)
+                cloudLog.debug('Client to server shutdown %s' % self._address)
                 conn.send(('#RETURN', None)) #garbage to force server to self-descruct
-                scicloudLog.debug('Sent #RETURN')
+                cloudLog.debug('Sent #RETURN')
             finally:                
                 conn.close()            
         
-        scicloudLog.debug('Finalizers start')
+        cloudLog.debug('Finalizers start')
         _run_finalizers()
-        scicloudLog.debug('Finalizers end -- killing manager')
+        cloudLog.debug('Finalizers end -- killing manager')
         
             
         #block until mpmanager down
         self._thread.join(self.__class__.server.close_wait_time + 0.07)
         if self._thread.is_alive():
-            scicloudLog.error('Failed to shut down mp manager!')
+            cloudLog.error('Failed to shut down mp manager!')
         else:
-            scicloudLog.debug('mp manager shut down successfully')
+            cloudLog.debug('mp manager shut down successfully')
             
         #reset!
         self.__class__.myInstance = None
@@ -579,88 +579,88 @@ class MPConnectionHook(object):
     """Wrapper object to make calls to MPConnection from subprocesses
     """
     
-    def __init__(self, scicloudcon, scicloudmodule, reportDir):       
-        self.scicloudcon = scicloudcon
-        self.scicloudmodule = scicloudmodule
+    def __init__(self, cloudcon, cloudmodule, reportDir):       
+        self.cloudcon = cloudcon
+        self.cloudmodule = cloudmodule
         self.reportDir = reportDir
     
     def open(self):
         """Open master if it isn't open"""
-        if not self.scicloudcon.opened:
-            self.scicloudcon.open()
-        if self.scicloudcon.adapter.report:
-            self.reportDir = self.scicloudcon.adapter.report.logPath
-        self.opened = self.scicloudcon.opened
+        if not self.cloudcon.opened:
+            self.cloudcon.open()
+        if self.cloudcon.adapter.report:
+            self.reportDir = self.cloudcon.adapter.report.logPath
+        self.opened = self.cloudcon.opened
     
     def close(self):
         """cannot close the proxy"""
         pass
     
-    def get_scicloud_module(self):
-        return self.scicloudmodule
+    def get_cloud_module(self):
+        return self.cloudmodule
     
     def get_report_dir(self):
         return self.reportDir
     
     def job_add(self, params, logdata = None):
-        return self.scicloudcon.job_add(params, logdata)    
+        return self.cloudcon.job_add(params, logdata)    
         
     def jobs_join(self, jids, timeout):
         """jobs join is not supported here as the server is not multithreaded"""
         return False                
 
     def jobs_map(self, params, mapargs, mapkwargs = None, logdata = None):
-        return self.scicloudcon.jobs_map(params, mapargs, mapkwargs, logdata)
+        return self.cloudcon.jobs_map(params, mapargs, mapkwargs, logdata)
     
     def jobs_result(self, jids, by_jid):
-        return self.scicloudcon.jobs_result(jids, by_jid)
+        return self.cloudcon.jobs_result(jids, by_jid)
     
     def jobs_kill(self, jids):
-        return self.scicloudcon.jobs_kill(jids)
+        return self.cloudcon.jobs_kill(jids)
     
     def jobs_delete(self, jids):
-        return self.scicloudcon.jobs_delete(jids)
+        return self.cloudcon.jobs_delete(jids)
     
     def jobs_info(self, jids, info_requested):
-        return self.scicloudcon.jobs_info(jids, info_requested)
+        return self.cloudcon.jobs_info(jids, info_requested)
     
     def is_simulated(self):
-        return self.scicloudcon.is_simulated()
+        return self.cloudcon.is_simulated()
     
     def needs_restart(self, **kwargs):
-        return self.scicloudcon.needs_restart(**kwargs)
+        return self.cloudcon.needs_restart(**kwargs)
     
-    def send_request(self, url, post_values, get_values=None, logfunc=scicloudLog.info):
-        return self.scicloudcon.send_request(url, post_values, get_values, logfunc)          
+    def send_request(self, url, post_values, get_values=None, logfunc=cloudLog.info):
+        return self.cloudcon.send_request(url, post_values, get_values, logfunc)          
     
     def connection_info(self):
-        return self.scicloudcon.connection_info()
+        return self.cloudcon.connection_info()
     
     def force_adapter_report(self):
         """
          Should the SerializationReport for the SerializationAdapter be coerced to be instantiated?
         """
-        return self.scicloudcon.force_adapter_report()
+        return self.cloudcon.force_adapter_report()
     
     def report_name(self):
-        return self.scicloudcon.report_name()       
+        return self.cloudcon.report_name()       
     
 
-def patch_scicloud(scicloudObjs, myPid):
-    """Run on subprocesses to patch scicloud with a list of scicloudproxies
-    Returns the primary scicloud, constructed from the first scicloudproxy"""
-    from ..scicloud import Cloud
-    from .. import scicloudinterface as ci
+def patch_cloud(cloudObjs, myPid):
+    """Run on subprocesses to patch cloud with a list of cloudproxies
+    Returns the primary cloud, constructed from the first cloudproxy"""
+    from ..cloud import Cloud
+    from .. import cloudinterface as ci
     
     report = None
     
     baseCl = None
     
-    for scicloudObj in scicloudObjs:
+    for cloudObj in cloudObjs:
         
-        #construct scicloud    
-        sa = SerializingAdapter(scicloudObj, isSlave = True)   
-        reportDir = scicloudObj.get_report_dir()
+        #construct cloud    
+        sa = SerializingAdapter(cloudObj, isSlave = True)   
+        reportDir = cloudObj.get_report_dir()
         if reportDir:
             sa.init_report()
             report = sa.report
@@ -669,11 +669,11 @@ def patch_scicloud(scicloudObjs, myPid):
             
         cl = Cloud(sa)
         
-        modstr = scicloudObj.get_scicloud_module()
+        modstr = cloudObj.get_cloud_module()
         __import__(modstr)
         mod = sys.modules[modstr]
             
-        ci._bindscicloud(mod, cl, 'proxy', immutable=True)
+        ci._bindcloud(mod, cl, 'proxy', immutable=True)
         if not baseCl:
             baseCl = cl
         
@@ -699,7 +699,7 @@ class MPConnection(CloudConnection, Pool):
     inKill = False
         
     #CONFIGURATION:
-    c = """Number of subprocesses that scicloud multiprocessing should utilize.
+    c = """Number of subprocesses that cloud multiprocessing should utilize.
     Beware of using too low of a number of subprocesses, as deadlock can occur. 
     If set to 0, this will be set to the number of cores available on this system."""
     num_procs =  cc.mp_configurable('num_procs', default=8, comment=c)
@@ -710,13 +710,13 @@ class MPConnection(CloudConnection, Pool):
     
     c = """If set to true, job stdout and stderr will be redirected to files inside 
     the serialize_logging_path.  This option simulates PiCloud behavior and must be
-    set to true for ``scicloud.info`` to be able to request stdout or stderr information 
+    set to true for ``cloud.info`` to be able to request stdout or stderr information 
     about jobs.
     If set to false, job stdout and stderr will be the same as the parent process."""
     redirect_job_output = cc.mp_configurable('redirect_job_output', default=True, comment=c)
         
-    c = """Maxmimum number of jobs that scicloudmp should store.  Set to 0 for no limit.  
-    This option only applies to scicloud.mp and the scicloud simulator.
+    c = """Maxmimum number of jobs that cloudmp should store.  Set to 0 for no limit.  
+    This option only applies to cloud.mp and the cloud simulator.
     PiCloud recommends that any limit stays above 1024."""
     mp_cache_size = cc.mp_configurable('mp_cache_size_limit', default=0, comment=c)
             
@@ -754,10 +754,10 @@ class MPConnection(CloudConnection, Pool):
             CloudConnection.open(self)        
 
             if self.mp_cache_size == 0:
-                self._adapter.scicloud.job_cache_size = 0
+                self._adapter.cloud.job_cache_size = 0
             else:
-                self._adapter.scicloud.job_cache_size = self.mp_cache_size
-            self._adapter.scicloud.result_cache_size = 0 #no limit in multiprocessing
+                self._adapter.cloud.job_cache_size = self.mp_cache_size
+            self._adapter.cloud.result_cache_size = 0 #no limit in multiprocessing
                    
             #pool related
             self._setup_queues()
@@ -777,24 +777,24 @@ class MPConnection(CloudConnection, Pool):
             #Don't spawn more than one copy!
             if MPManager.myInstance:
             
-                scicloudmanager = MPManager.myInstance
+                cloudmanager = MPManager.myInstance
             else:
-                scicloudmanager = MPManager()         
-                scicloudmanager.start_threaded()
-            self.scicloud_manager = scicloudmanager
+                cloudmanager = MPManager()         
+                cloudmanager.start_threaded()
+            self.cloud_manager = cloudmanager
                 
-            #scicloud-hooks. We must bind scicloud and scicloud.mp modules correctly
-            self.scicloudHooks = []        
-            modnames = ['scicloud', 'scicloud.mp']
+            #cloud-hooks. We must bind cloud and cloud.mp modules correctly
+            self.cloudHooks = []        
+            modnames = ['cloud', 'cloud.mp']
             
             for modname in modnames:
                 try:
-                    scicloudmod =  sys.modules[modname]
+                    cloudmod =  sys.modules[modname]
                 except KeyError:
-                    scicloudLog.error('Cannot find %s in sys.modules' % modname)
+                    cloudLog.error('Cannot find %s in sys.modules' % modname)
                 else:
-                    scicloud = getattr(scicloudmod,'__scicloud')
-                    adapter = scicloud.adapter
+                    cloud = getattr(cloudmod,'__cloud')
+                    adapter = cloud.adapter
                     conn = adapter.connection                                
                                         
                     if adapter.report:
@@ -802,13 +802,13 @@ class MPConnection(CloudConnection, Pool):
                     else:
                         reportDir = None
                     
-                    chook = scicloudmanager.ConnectionHook(conn, modname, reportDir)                    
+                    chook = cloudmanager.ConnectionHook(conn, modname, reportDir)                    
                     
-                    #first scicloudhook is 'primary' -- i.e. this object
+                    #first cloudhook is 'primary' -- i.e. this object
                     if conn == self:
-                        self.scicloudHooks.insert(0, chook)
+                        self.cloudHooks.insert(0, chook)
                     else:
-                        self.scicloudHooks.append(chook)                
+                        self.cloudHooks.append(chook)                
                     
             if not self.num_procs:
                 try:
@@ -825,8 +825,8 @@ class MPConnection(CloudConnection, Pool):
             self._task_sem = threading.BoundedSemaphore(int(self.io_buffer_factor*self.num_procs))
     
             self._task_handler = threading.Thread(
-                target=MPConnection._scicloud_handle_tasks,
-                name = '_scicloud_handle_tasks',
+                target=MPConnection._cloud_handle_tasks,
+                name = '_cloud_handle_tasks',
                 args=(self._taskqueue, self._task_sem, self._quick_put, self._outqueue, self._pool)
                 )
             self._task_handler.daemon = True
@@ -836,7 +836,7 @@ class MPConnection(CloudConnection, Pool):
     
             self._result_handler = threading.Thread(
                 target=Pool._handle_results,
-                name = '_scicloud_handle_results',
+                name = '_cloud_handle_results',
                 args=(self._outqueue, self._quick_get, self._cache)
                 )
             self._result_handler.daemon = True
@@ -877,24 +877,24 @@ class MPConnection(CloudConnection, Pool):
                 self.join_cv = None
             
             #setupLogHandlers()
-            scicloudLog.info('Started Cloud multiprocessing with %d subprocesses' % self.num_procs)
+            cloudLog.info('Started Cloud multiprocessing with %d subprocesses' % self.num_procs)
             
             
    
     def _genprocess(self):
-        from .. import scicloudinterface
+        from .. import cloudinterface
         w = self.Process(
-            target=scicloud_worker,
-            args=(self._inqueue, self._outqueue, self.scicloudHooks,  
+            target=cloud_worker,
+            args=(self._inqueue, self._outqueue, self.cloudHooks,  
                   self.nextpid, self.redirect_job_output,
                   self.adapter.serializeDebugging, self.adapter.serializeLogging,
-                  scicloudinterface.last_api_key, scicloudinterface.last_api_secretkey)
+                  cloudinterface.last_api_key, cloudinterface.last_api_secretkey)
             )
         self._pool.append(w)
         w.name = w.name.replace('Process', 'CloudPoolWorker')
         w.daemon = True
         w.start()
-        w.scicloudPid = self.nextpid #extra info
+        w.cloudPid = self.nextpid #extra info
         self.nextpid +=1 
 
     def _kill_job(self, jid):        
@@ -917,13 +917,13 @@ class MPConnection(CloudConnection, Pool):
         #first we try a SIGINT which may raise an exception and get us out of here
         #not supported on windows when running python versions < 2.7
         if sys.platform != 'win32' or sys.version_info >= (2.7):            
-            scicloudLog.info('Sending SIGINT to job %d on pid %d. real pid' % (job.jid, job.pid))
+            cloudLog.info('Sending SIGINT to job %d on pid %d. real pid' % (job.jid, job.pid))
             for proc in self._pool:
-                if proc.scicloudPid == job.pid:                      
+                if proc.cloudPid == job.pid:                      
                     os.kill(proc.ident, signal.SIGINT)
         
         time.sleep(1.0)
-        scicloudLog.info('Job is currently %s' % job.status)
+        cloudLog.info('Job is currently %s' % job.status)
         if job.status != status_processing: #sigint worked!
             return
             
@@ -940,16 +940,16 @@ class MPConnection(CloudConnection, Pool):
             try:
                 timeout = 0.1
                 racquire = self._inqueue._rlock.acquire
-                scicloudLog.info('Initiating shutdown of job %d on pid %d' % (job.jid, job.pid))
+                cloudLog.info('Initiating shutdown of job %d on pid %d' % (job.jid, job.pid))
                 if not re_enter:
                     for _ in xrange(3): #a few tries
                         if racquire(block=True, timeout = timeout): #lock down lock job process reads
                             break
-                        scicloudLog.debug('Kill job %d on pid %d: Could not get lock - injecting backoff messages' % (job.jid, job.pid))                
+                        cloudLog.debug('Kill job %d on pid %d: Could not get lock - injecting backoff messages' % (job.jid, job.pid))                
                         for _ in xrange(self.num_procs*2):
                             self._quick_put(sleep_task_flag) #pump channel with backoff messages
                         timeout = 0.5 #highly likely to succeed now  
-                scicloudLog.debug('Kill job %d on pid %d: Acquired subprocess input pipe' % (job.jid, job.pid))         
+                cloudLog.debug('Kill job %d on pid %d: Acquired subprocess input pipe' % (job.jid, job.pid))         
                 if job.status in ran_statuses: #verify again
                     return
                 
@@ -958,34 +958,34 @@ class MPConnection(CloudConnection, Pool):
                 self._clear_results()            
                 job.killMe = True    
                 
-                scicloudLog.debug('Kill job %d on pid %d: Flushed result queue. jobs is %s' % (job.jid, job.pid, job.status))
+                cloudLog.debug('Kill job %d on pid %d: Flushed result queue. jobs is %s' % (job.jid, job.pid, job.status))
                 if job.status in ran_statuses: #verify one last time before killing..
                     return                            
                 
                 #At this point the result queue is clear AND no one can write anymore - kill the process            
                 for proc in self._pool:
-                    if proc.scicloudPid == job.pid:
-                        scicloudLog.debug('terminating job %d on pid %d', job.jid, job.pid)
+                    if proc.cloudPid == job.pid:
+                        cloudLog.debug('terminating job %d on pid %d', job.jid, job.pid)
                         proc.terminate()
                         self._pool.remove(proc)
                         killed = True                    
                         break
             finally:      
-                scicloudLog.debug('termination done (killed=%s). releasing locks? %s', killed, not re_enter)          
+                cloudLog.debug('termination done (killed=%s). releasing locks? %s', killed, not re_enter)          
                 if not re_enter:
                     self.inKill = False
                     self._inqueue._rlock.release()
                     if self._outqueue._wlock:
                         self._outqueue._wlock.release()
-                    scicloudLog.debug('Locks are released!')
+                    cloudLog.debug('Locks are released!')
             if killed:
-                scicloudLog.debug('Job was terminated -- respawning, my state is %s. result handler state is %s', self._state, self._task_handler._state)
+                cloudLog.debug('Job was terminated -- respawning, my state is %s. result handler state is %s', self._state, self._task_handler._state)
                 job._aborted(status_killed)                
                 if self._state or self._task_handler._state:
-                    scicloudLog.debug('not respawning due to non running state!')
+                    cloudLog.debug('not respawning due to non running state!')
                     return  #get out of here
                 self._genprocess()
-                scicloudLog.debug('process respawned state is %s', self._state)
+                cloudLog.debug('process respawned state is %s', self._state)
 
     def _clear_results(self):
         """Clear results from main queue and process
@@ -998,9 +998,9 @@ class MPConnection(CloudConnection, Pool):
         thread = threading.current_thread()
         
         if sys.platform != 'win32':
-            scicloudLog.debug('JobKiller: Clearing queue, entering loop? %s Am I result handler? %s' % (poll(),thread == self._result_handler))
+            cloudLog.debug('JobKiller: Clearing queue, entering loop? %s Am I result handler? %s' % (poll(),thread == self._result_handler))
         else: #can't call poll
-            scicloudLog.debug('JobKiller: Clearing queue,Am I result handler? %s' % (thread == self._result_handler))
+            cloudLog.debug('JobKiller: Clearing queue,Am I result handler? %s' % (thread == self._result_handler))
         #print 'JobKiller: Clearing queue, entering loop? %s Am I result handler? %s' % (poll(),thread == self._result_handler)
         
         
@@ -1059,16 +1059,16 @@ class MPConnection(CloudConnection, Pool):
                 
                 for p in self._pool[:]:
                     if not p.is_alive(): #sys.exit event!                        
-                        pid = p.scicloudPid
-                        scicloudLog.info('Killed process (%s) detected -- respawning! state is %s', pid, self._state)
+                        pid = p.cloudPid
+                        cloudLog.info('Killed process (%s) detected -- respawning! state is %s', pid, self._state)
                         for _, job in self._cache.items(): #find/delete relevant jobs
                             if job.status == status_processing and job.pid == pid:
-                                job._aborted(status_error, CloudException('Job was killed with sys.exit(). Please do not use sys.exit() within scicloud called functions'))
+                                job._aborted(status_error, CloudException('Job was killed with sys.exit(). Please do not use sys.exit() within cloud called functions'))
                         self._pool.remove(p)
                         self._genprocess() #restart process
     
     @staticmethod
-    def _scicloud_handle_tasks(taskqueue, task_sem, put, outqueue, pool):
+    def _cloud_handle_tasks(taskqueue, task_sem, put, outqueue, pool):
         """Uses semaphore to allow pqueue to run"""
         thread = threading.current_thread()
 
@@ -1180,10 +1180,10 @@ class MPConnection(CloudConnection, Pool):
         if job.deleted:
             pass
         elif job.status == status_done:
-            self.adapter.scicloud.cacheManager.putCached(jid, status=status, exception = exception, 
+            self.adapter.cloud.cacheManager.putCached(jid, status=status, exception = exception, 
                                                       runtime=job.runtime, loginfo = loginfo, result = job.result)
         else:
-            self.adapter.scicloud.cacheManager.putCached(jid, status=status, exception = exception, 
+            self.adapter.cloud.cacheManager.putCached(jid, status=status, exception = exception, 
                                                       runtime=job.runtime, loginfo = loginfo)   
             
         if self.join_cv:
@@ -1196,7 +1196,7 @@ class MPConnection(CloudConnection, Pool):
         self._taskqueue.put((job.priority, [(job.jid, job.func, job.args, job.kwds, 
                                              job.result_serialization_level, job.logname, job.logpid, job.logcnt)]))
 
-    def scicloud_apply_async(self, func, args=(), kwds={}, func_name = None, 
+    def cloud_apply_async(self, func, args=(), kwds={}, func_name = None, 
                           label = None, dependencies = [], priority = 5,
                           result_serialization_level = 0, 
                           logname="", logpid = 1, logcnt=0):
@@ -1235,13 +1235,13 @@ class MPConnection(CloudConnection, Pool):
     
     def close(self):
         CloudConnection.close(self)           
-        scicloudLog.debug('Terminating process pool')
+        cloudLog.debug('Terminating process pool')
         with self.job_kill_lock:  #avoid race condition with job killing
             self.terminate()
-        scicloudLog.debug('Notifying process monitor. state now %s', self._state)
+        cloudLog.debug('Notifying process monitor. state now %s', self._state)
         with self._process_monitor_cv:
             self._process_monitor_cv.notify() #force shutdown
-        self.scicloud_manager.close()
+        self.cloud_manager.close()
         self._process_monitor.join()    
   
     @staticmethod
@@ -1268,7 +1268,7 @@ class MPConnection(CloudConnection, Pool):
         
         #print 'START running add... %s' % params
         #print 'add'
-        thejob = self.scicloud_apply_async(func=func, args=args, kwds=kwargs, func_name = func_name, 
+        thejob = self.cloud_apply_async(func=func, args=args, kwds=kwargs, func_name = func_name, 
                                         label = label, dependencies = dependencies, priority = priority,  
                                         result_serialization_level = result_serialization_level,
                                         logname=logname, logpid = logpid, logcnt = logcnt)
@@ -1300,7 +1300,7 @@ class MPConnection(CloudConnection, Pool):
         for args, kwargs in itertools.izip(mapargs, mapkwargs): 
             
             logname = ''.join([logprefix,'.%sjobresult_',str(ctr)])
-            thejob = self.scicloud_apply_async(func=func, args=args, kwds=kwargs, func_name = func_name, 
+            thejob = self.cloud_apply_async(func=func, args=args, kwds=kwargs, func_name = func_name, 
                                         label = label, dependencies = dependencies, priority = priority,
                                         result_serialization_level = result_serialization_level, 
                                         logname=logname, logpid = logpid, logcnt=logcnt)
@@ -1309,14 +1309,14 @@ class MPConnection(CloudConnection, Pool):
         return outjids
             
     def get_job_item(self, jid):
-        """Retrieve multiprocessing job from either local or scicloud cache"""            
+        """Retrieve multiprocessing job from either local or cloud cache"""            
         job = self._cache.get(jid)        
         if job:
             if job.deleted:
                 raise CloudException('Does not exist or was purged from cache', jid=jid)
             return job
         #been deleted -- access cache
-        job = self.adapter.scicloud.cacheManager._getJob(jid)
+        job = self.adapter.cloud.cacheManager._getJob(jid)
         if job:
             return job
         raise CloudException('Does not exist or was purged from cache', jid=jid)
@@ -1395,7 +1395,7 @@ class MPConnection(CloudConnection, Pool):
     def jobs_info(self, jids, info_requested):
         jobs = [self.get_job_item(jid) for jid in maybe_xrange_iter(jids)]
         outdict = {}
-        errMsg = 'redirect_job_output must be enabled in scicloudconf.py to access stdout'
+        errMsg = 'redirect_job_output must be enabled in cloudconf.py to access stdout'
         for jid, job in itertools.izip(maybe_xrange_iter(jids),jobs):
             dct = {}
             if 'status' in info_requested:

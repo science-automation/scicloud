@@ -11,7 +11,7 @@ Copyright (c) 2009 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -27,26 +27,26 @@ http://www.gnu.org/licenses/lgpl-2.1.html
 """
 
 from . import local
-from .. import scicloudconfig as cc
-from ..scicloudlog import scicloudLog
+from .. import cloudconfig as cc
+from ..cloudlog import cloudLog
 
 class SimulatedConnection(local.MPConnection):       
     simulatedForceSerializeDebugging = \
         cc.simulation_configurable('force_serialize_debugging',
                                   default=True,hidden=True,
-                                  comment="If this is is set and scicloud is running in simulation mode, serialize_debugging  (see logging section) will be turned on")
+                                  comment="If this is is set and cloud is running in simulation mode, serialize_debugging  (see logging section) will be turned on")
     simulatedForceSerializeLogging = \
         cc.simulation_configurable('force_serialize_logging',
                                   default=True,
-                                  comment="If this is is set and scicloud is running in simulation mode, serialize_logging  (see logging section) will be turned on")
+                                  comment="If this is is set and cloud is running in simulation mode, serialize_logging  (see logging section) will be turned on")
     if simulatedForceSerializeLogging and not simulatedForceSerializeDebugging:
         simulatedForceSerializeDebugging = True
-        scicloudLog.warning("force_serialize_logging implies force_serialize_debugging. Setting force_serialize_debugging to true")
+        cloudLog.warning("force_serialize_logging implies force_serialize_debugging. Setting force_serialize_debugging to true")
     
     
     simulated_force_redirect_job_output = \
         cc.simulation_configurable('force_redirect_job_output', default=True, 
-                                  comment="If set and scicloud is in simulation mode, forces redirect_job_output (see multiprocessing section) to true")
+                                  comment="If set and cloud is in simulation mode, forces redirect_job_output (see multiprocessing section) to true")
         
     def open(self):
         #modify mpconnection options here:

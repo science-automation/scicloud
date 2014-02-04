@@ -9,7 +9,7 @@ Copyright (c) 2012 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -24,7 +24,7 @@ License along with this package; if not, see
 http://www.gnu.org/licenses/lgpl-2.1.html
 """
 
-from .. import _getscicloud, _getscicloudnetconnection
+from .. import _getcloud, _getcloudnetconnection
 
 def get_ssh_info(jid, timeout=None):
     """Return dictionary describing how to access job's ssh port.
@@ -42,7 +42,7 @@ def get_ssh_info(jid, timeout=None):
     
     conn_dct = get_connection_info(jid, 22, timeout=timeout)
 
-    api_key = _getscicloudnetconnection().api_key
+    api_key = _getcloudnetconnection().api_key
     key_path = get_sshkey_path(api_key)
     conn_dct['identity'] = key_path
     return conn_dct

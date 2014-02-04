@@ -11,7 +11,7 @@ Copyright (c) 2013 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -35,12 +35,12 @@ import sys
 import traceback
 from subprocess import Popen, PIPE
 
-from ..scicloud import CloudException
+from ..cloud import CloudException
 from ..queue import Retry, MaxRetryException
 from inspect import getargspec
 
 import logging
-scicloudLog = logging.getLogger('Cloud.queue')
+cloudLog = logging.getLogger('Cloud.queue')
 
 
 def _handle_action_dct_excp(action_dct, excp, message, cur_retry, max_retries):
@@ -183,7 +183,7 @@ def launch_attachment(input_queue, message_handler, expand_iterable_output, outp
                         sentinel = Exception('message_handler retries exceeded:\n' + traceback.format_exc())
                     _handle_action_dct_excp(on_error,r,message, cur_retry, msg_max_retries)
                 else:                    
-                    scicloudLog.warning('Retrying on message. current_retries: %d', cur_retry)                    
+                    cloudLog.warning('Retrying on message. current_retries: %d', cur_retry)                    
                     input_queue._push([message], effective_delay, cur_retry+1, msg_max_retries)                
             
             except Exception as e:
@@ -243,7 +243,7 @@ def launch_attachment(input_queue, message_handler, expand_iterable_output, outp
                     
         def push_to_queue():
             """Run indefinitely, popping lists of message responses off mp result queue,
-            and pushing them to the output scicloud queues.
+            and pushing them to the output cloud queues.
             
             A message response can be a variety of things:
                 
@@ -419,14 +419,14 @@ def launch_attachment(input_queue, message_handler, expand_iterable_output, outp
                             with ticket_lock:
                                 processing_tickets.clear() # "lost" messages will restart elsewhere   
                             
-                            scicloudLog.info('monitor pool shutting down')
+                            cloudLog.info('monitor pool shutting down')
                             break
                         finally: # the BOMG                                                        
                             with process_monitor_cv:
                                 process_monitor_cv.wait(wait_time)
                             if shutting_down[0] == 2:
                                 return
-                            scicloudLog.warning('Safe shutdown could not complete. Hard terminating!')
+                            cloudLog.warning('Safe shutdown could not complete. Hard terminating!')
                             for x in all_processes:
                                 x.terminate()
                             time.sleep(5.0)
@@ -438,9 +438,9 @@ def launch_attachment(input_queue, message_handler, expand_iterable_output, outp
                             
                             if shutting_down[0] == 2:
                                 return                            
-                            scicloudLog.warning('Monitor aborting process!')
+                            cloudLog.warning('Monitor aborting process!')
                             os._exit(1)  
-                            scicloudLog.warning('This line should not have run..')
+                            cloudLog.warning('This line should not have run..')
                         
                     
         push_thread = threading.Thread(target=push_to_queue)
@@ -458,7 +458,7 @@ def launch_attachment(input_queue, message_handler, expand_iterable_output, outp
         monitor_thread.name = 'Monitor pool Thread'
         monitor_thread.start()
 
-        scicloudLog.debug('All subprocesses started. Listening on queue')
+        cloudLog.debug('All subprocesses started. Listening on queue')
         
         # Main thread processes the input queue
         message_id = 1
@@ -482,15 +482,15 @@ def launch_attachment(input_queue, message_handler, expand_iterable_output, outp
                     del message['ticket']
                     message_queue.put(message)
             except QueueFull, qe: # on system exit, this may be raised; translate to a system exit
-                scicloudLog.info('Got QueueFull (%s) exception. Possibly kill signal?' % str(qe))
+                cloudLog.info('Got QueueFull (%s) exception. Possibly kill signal?' % str(qe))
                 raise SystemExit('Killed')
         
         # SHUTDOWN
         req_shutdown = shutting_down[0]
         if req_shutdown:
-            scicloudLog.debug('shutdown requested')
+            cloudLog.debug('shutdown requested')
         else:
-            scicloudLog.debug('No more messages in queue -- shutting down')                    
+            cloudLog.debug('No more messages in queue -- shutting down')                    
         
         shutting_down[0] = True
         with process_monitor_cv:
@@ -508,22 +508,22 @@ def launch_attachment(input_queue, message_handler, expand_iterable_output, outp
             else:
                 sentinels_to_send-=1
 
-        scicloudLog.debug('Waiting for subprocesses to finish')
+        cloudLog.debug('Waiting for subprocesses to finish')
 
         # wait for all processes to get sentinel and terminate
         while [p for p in all_processes if p.is_alive()]:
             for p in all_processes:
                 p.join(10)
         
-        scicloudLog.debug('Waiting for outputs to flush.')                    
+        cloudLog.debug('Waiting for outputs to flush.')                    
         push_thread.join()
         
-        scicloudLog.debug('Waiting for validation to flush.')
+        cloudLog.debug('Waiting for validation to flush.')
         with ack_cv:
             ack_cv.notify() # force wake up
         ack_thread.join()
         
-        scicloudLog.debug('Done')
+        cloudLog.debug('Done')
         
         shutting_down[0] = 2 # successful shut down
         

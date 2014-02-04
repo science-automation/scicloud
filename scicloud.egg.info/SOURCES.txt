@@ -17,10 +17,10 @@ src/__init__.py
 src/_server_bucket.py
 src/account.py
 src/bucket.py
-src/scicloud.py
-src/scicloudconfig.py
-src/scicloudinterface.py
-src/scicloudlog.py
+src/cloud.py
+src/cloudconfig.py
+src/cloudinterface.py
+src/cloudlog.py
 src/cron.py
 src/environment.py
 src/files.py
@@ -41,7 +41,7 @@ src/cli/main.py
 src/cli/setup_machine.py
 src/cli/util.py
 src/serialization/__init__.py
-src/serialization/scicloudpickle.py
+src/serialization/cloudpickle.py
 src/serialization/pickledebug.py
 src/serialization/report.py
 src/serialization/serializationhandlers.py

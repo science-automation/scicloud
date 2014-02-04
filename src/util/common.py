@@ -1,5 +1,5 @@
 """
-This module holds convenience functions for accessing information 
+This module holds convenience functions for accessing information
 
 Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
 
@@ -9,7 +9,7 @@ Copyright (c) 2013 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -20,7 +20,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
-License along with this package; if not, see 
+License along with this package; if not, see
 http://www.gnu.org/licenses/lgpl-2.1.html
 """
 
@@ -40,24 +40,24 @@ except:
     # Python 2.5 compatibility
     import simplejson as json
 
-import scicloud
+import scicloud as cloud
 from . import credentials
-from ..scicloudlog import stdout as print_stdout
+from ..cloudlog import stdout as print_stdout
 
-scicloudLog = logging.getLogger('util.common')
+cloudLog = logging.getLogger('util.common')
 
 
 ########## Utilities for sending post request ############
 def _send_request(request_url, data, jsonize_values=True):
-    """Makes a scicloud request and returns the results.
-    
+    """Makes a cloud request and returns the results.
+
     * request_url: whee the request should be sent
     * data: dictionary of post values relevant to the request
     * jsonize_values: if True (default), then the values of the *data*
         dictionary are jsonized before request is made."""
     if jsonize_values:
         data = _jsonize_values(data)
-    conn = scicloud._getscicloudnetconnection()
+    conn = cloud._getcloudnetconnection()
     return conn.send_request(request_url, data)
 
 def _jsonize_values(dct):
@@ -95,17 +95,17 @@ def _check_rsync_dependencies():
     """Checks dependencies by trying the commands."""
     msg_template = 'Dependency %s not found'
     if plat == 'Windows':
-        msg_template += ' in scicloud installation'
+        msg_template += ' in cloud installation'
 
     # check rsync exists
     status, _, _ = exec_command('%s --version' % _rsync_path(), pipe_output=True)
     if status:
-        raise scicloud.CloudException(msg_template % 'rsync')
-    
+        raise cloud.CloudException(msg_template % 'rsync')
+
     # check ssh exists
     status, _, _ = exec_command('%s -V' % _ssh_path(), pipe_output=True)
     if status:
-        raise scicloud.CloudException(msg_template % 'ssh')
+        raise cloud.CloudException(msg_template % 'ssh')
 
 class WindowsPath(object):
     """Processes Windows paths for easy conversion into cwRsync compatible
@@ -151,12 +151,12 @@ def parse_local_paths(local_paths):
     """Validate local paths."""
     if not isinstance(local_paths, (tuple, list)):
         local_paths = [local_paths]
-    
+
     parsed_paths = []
     for path in local_paths:
         path = fix_path(path)
         if path.count(_remote_path_delimiter):
-            raise scicloud.CloudException('Local path cannot contain "%s"' %
+            raise cloud.CloudException('Local path cannot contain "%s"' %
                                        _remote_path_delimiter)
         parsed_paths.append(path)
     return parsed_paths
@@ -165,18 +165,18 @@ def parse_remote_paths(remote_paths):
     """Validate remote paths."""
     if not isinstance(remote_paths, (tuple, list)):
         remote_paths = [remote_paths]
-    
+
     resource_name = None
     parsed_paths = []
     for path in remote_paths:
         if path.count(_remote_path_delimiter) != 1:
-            raise scicloud.CloudException('Remote path must be resource_name:path')
+            raise cloud.CloudException('Remote path must be resource_name:path')
         r_name, r_path = path.split(_remote_path_delimiter)
         resource_name = resource_name or r_name
         if not r_name:
-            raise scicloud.CloudException('Remote path must start with a resource name')
+            raise cloud.CloudException('Remote path must start with a resource name')
         if resource_name != r_name:
-            raise scicloud.CloudException('All remote paths must use the same resource')
+            raise cloud.CloudException('All remote paths must use the same resource')
         parsed_paths.append(r_path)
     return (resource_name, parsed_paths)
 
@@ -216,12 +216,12 @@ def ssh_session(username, hostname, key_path, port=None, run_cmd=None):
 def rsync_session(src_arg, dest_arg, delete=False, pipe_output=True):
     """Perform an rsync operation over ssh using api_key's ssh key."""
     _check_rsync_dependencies()
-    
-    api_key = scicloud.connection_info().get('api_key')
+
+    api_key = cloud.connection_info().get('api_key')
     key_file = credentials.get_sshkey_path(api_key)
     if not os.path.exists(key_file):
-        raise scicloud.CloudException('%s not present. Something must have errored '
-                                   'earlier. See scicloud.log' % key_file)
+        raise cloud.CloudException('%s not present. Something must have errored '
+                                   'earlier. See cloud.log' % key_file)
     key_file = str(WindowsPath(key_file)) if plat == 'Windows' else key_file
 
     ssh_shell = ' '.join([_ssh_path(), '-q',
@@ -236,7 +236,7 @@ def rsync_session(src_arg, dest_arg, delete=False, pipe_output=True):
         rsync_cmd.append('--delete')
     rsync_cmd.extend(['-e "%s"' % ssh_shell, src_arg, dest_arg])
     rsync_cmd_str = ' '.join(rsync_cmd)
-    scicloudLog.debug('Performing rsync command: %s', rsync_cmd_str)
+    cloudLog.debug('Performing rsync command: %s', rsync_cmd_str)
     print_stdout('Performing rsync...')
     return exec_command(rsync_cmd_str, pipe_output)
 
@@ -245,25 +245,25 @@ def ssh_server_job(keep_alive=False):
     Set *keep_alive* to True to keep job running forever
     """
     poll_time = 4.0
-    
+
     activated = False
-    
+
     if keep_alive: # sleep forever
         time.sleep(315360000)
-        return 
+        return
 
     while True:
         time.sleep(poll_time)
         p = Popen('ps -C sshd -o cmd | grep pts', shell=True, stdout=PIPE, stderr=PIPE)
         stdout, _ = p.communicate()
         lines = stdout.splitlines()
-        
+
         if not lines:
             if activated:
                 print 'No more SSH connections. Terminating job'
                 break
-        
+
         else:
             activated=True
-        
-    
+
+

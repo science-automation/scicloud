@@ -6,7 +6,7 @@ import shutil
 
 #fix a bug that setuptools creates:
 import distutils.filelist
-findall = distutils.filelist.findall  
+findall = distutils.filelist.findall
 from distutils.util import change_root, convert_path
 from distutils.dir_util import mkpath
 from distutils.file_util import copy_file
@@ -14,7 +14,7 @@ from distutils.file_util import copy_file
 # For future use. Always will be true currently as we require setuptools
 use_setuptools = False
 
-def abort(msg):    
+def abort(msg):
     print >> sys.stderr, msg
     sys.exit(1)
 
@@ -23,7 +23,7 @@ if sys.argv == ['setup.py', 'sdist']:
     print 'using regular setup tools'
     from distutils.core import setup
 else:
-    try:    
+    try:
         from setuptools import setup
         distutils.filelist.findall = findall #reset
         use_setuptools = True
@@ -36,7 +36,7 @@ basedir = os.path.split(__file__)[0]
 for line in open(os.path.join(basedir, 'src/versioninfo.py')).readlines():
     if (line.startswith('release_version')):
         exec(line.strip())
-        
+
 
 if sys.version < '2.6':
     abort('Python must be > 2.6 to use Science VM')
@@ -57,11 +57,11 @@ except ImportError:
     try:
         import simplejson
     except ImportError:
-        if not use_setuptools:        
+        if not use_setuptools:
             abort('simplejson must be installed to use scivm\nDownload it at http://pypi.python.org/pypi/simplejson/')
         else:
             requires.append("simplejson")
-            
+
 try:
     import ssl
 except ImportError:
@@ -76,7 +76,7 @@ except ImportError:
 #check for pywin32 on windows which is highly recommended:
 #These can't be installed automatically, so just warn
 if os.name == 'nt':
-    try: 
+    try:
         import win32con
     except ImportError:
         sys.stderr.write('Python for Windows extensions are highly recommended for using scivm.\nDownload them at http://sourceforge.net/projects/pywin32/')
@@ -87,7 +87,7 @@ if 'bdist_wininst' in sys.argv:
     import distutils.command.bdist_wininst as bwin
     def get_exe_bytes (self):
         # Aaron's hack fix
-        
+
         bv = 9.0
         if self.plat_name == 'win-amd64':
             sfix = '-amd64'
@@ -105,15 +105,15 @@ if 'bdist_wininst' in sys.argv:
             return f.read()
         finally:
             f.close()
-            
+
     def get_installer_filename(self, fullname):
         # from http://bugs.python.org/issue8954
-        
+
         # Factored out to allow overriding in subclasses
 
         # pure Python packages always have win32 extension
         # required for crossplatform behaviour
-        if (not self.distribution.has_ext_modules() and 
+        if (not self.distribution.has_ext_modules() and
             not self.distribution.has_c_libraries() and
             self.plat_name != 'win-amd64'):
             basename = "%s.%s" % (fullname, "win32")
@@ -128,11 +128,11 @@ if 'bdist_wininst' in sys.argv:
                                           (basename, self.target_version))
         else:
             installer_name = os.path.join(self.dist_dir, "%s.exe" % basename)
-        return installer_name          
-     
+        return installer_name
+
     bwin.bdist_wininst.get_exe_bytes = get_exe_bytes
     bwin.bdist_wininst.get_installer_filename = get_installer_filename
-    
+
     if '--plat-name=win32' in sys.argv:
         distribute_file_path = 'extra/distribute-0.6.26.win32.msi'
     elif '--plat-name=win-amd64' in sys.argv:
@@ -141,19 +141,19 @@ if 'bdist_wininst' in sys.argv:
     rsync_dir = 'extra/rsync'
     rsync_files = [os.path.join(rsync_dir, f) for f in os.listdir(rsync_dir)]
     #rsync_install_dir = os.path.join(sys.prefix, 'lib', 'site-packages',
-    #                                 'sciscicloud', 'extras')
+    #                                 'scicloud', 'extras')
 
     data_files = [('scripts', [distribute_file_path]),
                   ('extras', rsync_files)]
     scripts = ['post_install.py']
     options = { 'bdist_wininst': {'install_script':'post_install.py'} }
-    
-    
+
+
     """hot fix for setuptools
     This script is for 32-bit so should always work"""
     from setuptools.command.easy_install import get_script_header, sys_executable, is_64bit, resource_string
     import re
-       
+
     def get_script_args(dist, executable=sys_executable, wininst=False):
         """Yield write_script() argument tuples for a distribution's entrypoints"""
         spec = str(dist.as_requirement())
@@ -182,7 +182,7 @@ if 'bdist_wininst' in sys.argv:
                         ext, launcher = '-script.py', 'cli.exe'
                         old = ['.py','.pyc','.pyo']
                         new_header = re.sub('(?i)pythonw.exe','python.exe',header)
-                    
+
                     if (sys.platform=='win32' and is_64bit()) or ('--plat-name=win-amd64' in sys.argv):
                         launcher = launcher.replace(".", "-64.")
                     else: # on linux (build system) always fall back to this
@@ -204,24 +204,24 @@ if 'bdist_wininst' in sys.argv:
     import setuptools.command.easy_install
     setuptools.command.easy_install.get_script_args = get_script_args
 
-    
+
 
 requires.append('setuptools')
 
 dist = setup(
-    name='sciscicloud',
+    name='scicloud',
     version=release_version,  #defined by versioninfo.py exec
-    description='Science VM client-side library',      
+    description='Science VM client-side library',
     author='Science Automation, Inc.',
     author_email='contact@scivm.com',
     url='http://www.scivm.com',
     install_requires=requires,
     license='GNU LGPL',
     long_description=open('README.txt').read(),
-    packages=['sciscicloud', 'sciscicloud.cli', 'sciscicloud.serialization', 'sciscicloud.transport', 'sciscicloud.util', 'sciscicloud.util.cloghandler', 'sciscicloud.shortcuts'],
-    package_dir = {'sciscicloud': os.path.join(basedir, 'src')},
-    package_data= {'sciscicloud.util.cloghandler' : ['README, PKG-INFO, LICENSE']}, 
-    platforms=['CPython 2.6', 'CPython 2.7'],      
+    packages=['scicloud', 'scicloud.cli', 'scicloud.serialization', 'scicloud.transport', 'scicloud.util', 'scicloud.util.cloghandler', 'scicloud.shortcuts'],
+    package_dir = {'scicloud': os.path.join(basedir, 'src')},
+    package_data= {'scicloud.util.cloghandler' : ['README, PKG-INFO, LICENSE']},
+    platforms=['CPython 2.6', 'CPython 2.7'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -235,7 +235,7 @@ dist = setup(
         'Topic :: System :: Distributed Computing',
         'Topic :: System :: Networking',
         ],
-    entry_points={'console_scripts': ['scivm = sciscicloud.cli.main:main',]},
+    entry_points={'console_scripts': ['scivm = scicloud.cli.main:main',]},
     data_files = data_files,
     scripts = scripts,
     options = options
@@ -244,7 +244,7 @@ dist = setup(
 
 if 'install' in sys.argv and '--single-version-externally-managed' not in sys.argv:
     if os.name != 'nt':
-        
+
         prefix = os.path.normpath(sys.prefix)
         root = None
         try:
@@ -252,8 +252,8 @@ if 'install' in sys.argv and '--single-version-externally-managed' not in sys.ar
             prefix = installer.prefix
             root = installer.root
         except Exception:
-            pass        
-        
+            pass
+
         # Try to install manpage and bash scripts:
         extra_files = [
                  {'src' : 'bash_completion.d/scivm',
@@ -262,7 +262,7 @@ if 'install' in sys.argv and '--single-version-externally-managed' not in sys.ar
                  {'src' : 'doc/scivm.1',
                  'dst' : '%s/share/man/man1/' % prefix,
                  'name' : 'Science VM manpage'}
-                 ]                         
+                 ]
         # copy code borrowed from distutils.command.install_data
         # We can't use original as it raises an exception if the file cant be written;
         # on error we just want to warn as these files aren't essential
@@ -271,25 +271,25 @@ if 'install' in sys.argv and '--single-version-externally-managed' not in sys.ar
                 dst = convert_path(file_info['dst'])
                 if root:
                     dst = change_root(root, dst)
-                
-                if root: 
+
+                if root:
                     # directories generally expected to exist already; if not we have wrong target directory
                     # for package maintainers using root, just build it to temporary directory
                     mkpath(dst)
-                
+
                 src = convert_path(file_info['src'])
                 copy_file(src, dst)
             except (OSError, IOError, distutils.errors.DistutilsError), e:
-                sys.stderr.write('Warning: Could not install %s to %s\n' % (file_info['name'], str(e)))                
-        
-    
+                sys.stderr.write('Warning: Could not install %s to %s\n' % (file_info['name'], str(e)))
+
+
     print ''
     print '********************************************************'
     print '********************************************************'
     print '***                                                  ***'
     print '***  Please run "scivm setup" to complete install  ***'
     if os.name == 'nt':
-        print '*** scivm.exe is in the Scripts directory of Python***'            
+        print '*** scivm.exe is in the Scripts directory of Python***'
     print '***                                                  ***'
     print '********************************************************'
     print '********************************************************'

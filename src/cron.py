@@ -4,7 +4,7 @@ Crons allow you to "register" a function to be invoked periodically on PiCloud
 according to a schedule you specify.
 
 Api keys must be configured before using any functions in this module.
-(via scicloudconf.py, scicloud.setkey, or being on Science VM server)
+(via cloudconf.py, cloud.setkey, or being on Science VM server)
 """
 from __future__ import absolute_import
 """
@@ -16,7 +16,7 @@ Copyright (c) 2011 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserv
 
 email: contact@picloud.com
 
-The scicloud package is free software; you can redistribute it and/or
+The cloud package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
@@ -31,7 +31,7 @@ License along with this package; if not, see
 http://www.gnu.org/licenses/lgpl-2.1.html
 """
 
-from . import _getscicloud, _getscicloudnetconnection
+from . import _getcloud, _getcloudnetconnection
 
 from .util import min_args
 from .util.zip_packer import Packer
@@ -44,7 +44,7 @@ _list_query = 'cron/list/'
 _info_query = 'cron/info/'
 
 """
-This module utilizes the scicloud object extensively
+This module utilizes the cloud object extensively
 The functions can be viewed as instance methods of the Cloud (hence accessing of protected variables)
 """
 
@@ -53,7 +53,7 @@ def _low_level_register(func, label, schedule, params):
     Same as regular register but accepts params rather than kwargs
     """
     if not callable(func):
-        raise TypeError( 'scicloud.cron.register first argument (%s) is not callable'  % (str(func) ))
+        raise TypeError( 'cloud.cron.register first argument (%s) is not callable'  % (str(func) ))
     try:
         nargs = min_args(func)
     except TypeError: #some types we cannot error check
@@ -75,17 +75,17 @@ def _low_level_register(func, label, schedule, params):
     except (UnicodeDecodeError, UnicodeEncodeError):
         raise TypeError('label must be an ASCII string')
     
-    scicloud = _getscicloud()
-    conn = _getscicloudnetconnection()
+    cloud = _getcloud()
+    conn = _getcloudnetconnection()
         
     os_env_vars = params.pop('os_env_vars', None)
-    sfunc, sarg, logprefix, logcnt = scicloud.adapter.scicloud_serialize(func, 2, [],logprefix='cron.',
+    sfunc, sarg, logprefix, logcnt = cloud.adapter.cloud_serialize(func, 2, [],logprefix='cron.',
                                                                    os_env_vars=os_env_vars)
     
     #Below is derived from HttpAdapter.job_add
     conn._update_params(params)
     
-    scicloud.adapter.dep_snapshot() #let adapter make any needed calls for dep tracking
+    cloud.adapter.dep_snapshot() #let adapter make any needed calls for dep tracking
     
     data = Packer()
     data.add(sfunc)
@@ -113,7 +113,7 @@ def register(func, label, schedule, **kwargs):
                     
     PiCloud schedules your crons under the *GMT (UTC+0) timezone*.
 
-    Certain special *kwargs* associated with scicloud.call can be attached to the periodic jobs: 
+    Certain special *kwargs* associated with cloud.call can be attached to the periodic jobs: 
 
     * _cores:
         Set number of cores your job will utilize. See http://docs.scivm.com/primer.html#choose-a-core-type/
@@ -134,7 +134,7 @@ def register(func, label, schedule, **kwargs):
         The stored function will always be serialized by the enhanced serializer, with debugging features.
         Possible values keyword are:
                     
-        0. default -- use scicloud module's enhanced serialization and debugging info            
+        0. default -- use cloud module's enhanced serialization and debugging info            
         1. no debug -- Disable all debugging features for result            
         2. use cPickle -- Use python's fast serializer, possibly causing PicklingErrors
     * _max_runtime:
@@ -173,8 +173,8 @@ def register(func, label, schedule, **kwargs):
         wrap it with a closure. e.g. func(x,y) --> lambda: func(x,y)
     """
     
-    scicloud = _getscicloud()
-    params = scicloud._getJobParameters(func,
+    cloud = _getcloud()
+    params = cloud._getJobParameters(func,
                                              kwargs, 
                                              ignore=['_label', '_depends_on', '_depends_on_errors'])
     
@@ -189,7 +189,7 @@ def deregister(label):
     except (UnicodeDecodeError, UnicodeEncodeError):
         raise TypeError('label must be an ASCII string')
     
-    conn = _getscicloudnetconnection()
+    conn = _getcloudnetconnection()
     
     conn.send_request(_deregister_query, {'label': label})   
         
@@ -203,7 +203,7 @@ def manual_run(label):
     except (UnicodeDecodeError, UnicodeEncodeError):
         raise TypeError('label must be an ASCII string')
     
-    conn = _getscicloudnetconnection()
+    conn = _getcloudnetconnection()
     
     resp = conn.send_request(_run_query, {'label': label})
     return resp['jid']   
@@ -213,7 +213,7 @@ def list():
     List labels of active crons registered on PiCloud
     """ 
     
-    conn = _getscicloudnetconnection()
+    conn = _getcloudnetconnection()
     resp = conn.send_request(_list_query, {})
     return resp['labels']
 
@@ -232,7 +232,7 @@ def info(label):
     * func_name: Name of function associated with cron
     """
     
-    conn = _getscicloudnetconnection()
+    conn = _getcloudnetconnection()
     resp = conn.send_request(_info_query, {'label':label})
     del resp['data']
     #del resp['version']
