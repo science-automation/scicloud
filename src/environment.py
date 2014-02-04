@@ -1,111 +1,111 @@
+"""
+Science VM environment management.
+This module allows the user to manage their environments on Science VM.
+See documentation at http://docs.scivm.com
+"""
+from __future__ import absolute_import
+"""
+Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
+
+email: support@scivm.com
+
+Copyright (c) 2013 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
+
+email: contact@picloud.com
+
+The cloud package is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This package is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this package; if not, see
+http://www.gnu.org/licenses/lgpl-2.1.html
+"""
+try:
+    import json
+except:
+    # Python 2.5 compatibility
+    import simplejson as json
+import logging
+import platform
+import random
+import re
+import sys
+import string
+import time
+
+import scicloud as cloud
+from .cloudlog import stdout as print_stdout, stderr as print_stderr
+from .util import credentials
+from .util import common
+
+cloudLog = logging.getLogger('Cloud.environment')
+
+plat = platform.system()
+
+_urls = {'list': 'environment/list/',
+         'list_bases': 'environment/list_bases/',
+         'create': 'environment/create/',
+         'edit_info': 'environment/edit_info/',
+         'modify': 'environment/modify/',
+         'save': 'environment/save/',
+         'save_shutdown': 'environment/save_shutdown/',
+         'shutdown': 'environment/shutdown/',
+         'clone': 'environment/clone/',
+         'delete': 'environment/delete/',
+         }
+
+# environment status types
+_STATUS_CREATING = 'new'
+_STATUS_READY = 'ready'
+_STATUS_ERROR = 'error'
+
+# environment action types
+_ACTION_IDLE = 'idle'
+_ACTION_SETUP = 'setup'
+_ACTION_EDIT = 'edit'
+_ACTION_SAVE = 'save'
+_ACTION_SETUP_ERROR = 'setup_error'
+_ACTION_SAVE_ERROR = 'save_error'
+
+
+def _send_env_request(request_type, data, jsonize_values=True):
+    type_url = _urls.get(request_type)
+    if type_url is None:
+        raise LookupError('Invalid env request type %s' % request_type)
+    return common._send_request(type_url, data, jsonize_values)
+
+"""
+environment management
+"""
+def list_envs(name=None):
+    """Returns a list of dictionaries describing user's environments.
+    If *name* is given, only shows info for the environment with that name.
+
+    Environment information is returned as list of dictionaries.  The keys
+    within each returned dictionary are:
+
+    * name: name of the environment
+    * status: status of the environment
+    * action: the action state of the environment (e.g. under edit)
+    * created: time when the environment was created
+    * last_modifed: last time a modification was saved
+    * hostname: hostname of setup server if being modified
+    * setup_time: time setup server has been up if being modified
     """
-    Science VM environment management.
-    This module allows the user to manage their environments on Science VM.
-    See documentation at http://docs.scivm.com
-    """
-    from __future__ import absolute_import
-    """
-    Copyright (c) 2014 `Science Automation Inc. <http://www.scivm.com>`_.  All rights reserved.
+    resp = _send_env_request('list', {'env_name': name})
+    return [common._fix_time_element(env, ['created', 'last_modified'])
+            for env in resp['envs_list']]
 
-    email: support@scivm.com
-
-    Copyright (c) 2013 `PiCloud, Inc. <http://www.picloud.com>`_.  All rights reserved.
-
-    email: contact@picloud.com
-
-    The cloud package is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Lesser General Public
-    License as published by the Free Software Foundation; either
-    version 2.1 of the License, or (at your option) any later version.
-
-    This package is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public
-    License along with this package; if not, see
-    http://www.gnu.org/licenses/lgpl-2.1.html
-    """
-    try:
-        import json
-    except:
-        # Python 2.5 compatibility
-        import simplejson as json
-    import logging
-    import platform
-    import random
-    import re
-    import sys
-    import string
-    import time
-
-    import scicloud as cloud
-    from .cloudlog import stdout as print_stdout, stderr as print_stderr
-    from .util import credentials
-    from .util import common
-
-    cloudLog = logging.getLogger('Cloud.environment')
-
-    plat = platform.system()
-
-    _urls = {'list': 'environment/list/',
-             'list_bases': 'environment/list_bases/',
-             'create': 'environment/create/',
-             'edit_info': 'environment/edit_info/',
-             'modify': 'environment/modify/',
-             'save': 'environment/save/',
-             'save_shutdown': 'environment/save_shutdown/',
-             'shutdown': 'environment/shutdown/',
-             'clone': 'environment/clone/',
-             'delete': 'environment/delete/',
-             }
-
-    # environment status types
-    _STATUS_CREATING = 'new'
-    _STATUS_READY = 'ready'
-    _STATUS_ERROR = 'error'
-
-    # environment action types
-    _ACTION_IDLE = 'idle'
-    _ACTION_SETUP = 'setup'
-    _ACTION_EDIT = 'edit'
-    _ACTION_SAVE = 'save'
-    _ACTION_SETUP_ERROR = 'setup_error'
-    _ACTION_SAVE_ERROR = 'save_error'
-
-
-    def _send_env_request(request_type, data, jsonize_values=True):
-        type_url = _urls.get(request_type)
-        if type_url is None:
-            raise LookupError('Invalid env request type %s' % request_type)
-        return common._send_request(type_url, data, jsonize_values)
-
-    """
-    environment management
-    """
-    def list_envs(name=None):
-        """Returns a list of dictionaries describing user's environments.
-        If *name* is given, only shows info for the environment with that name.
-
-        Environment information is returned as list of dictionaries.  The keys
-        within each returned dictionary are:
-
-        * name: name of the environment
-        * status: status of the environment
-        * action: the action state of the environment (e.g. under edit)
-        * created: time when the environment was created
-        * last_modifed: last time a modification was saved
-        * hostname: hostname of setup server if being modified
-        * setup_time: time setup server has been up if being modified
-        """
-        resp = _send_env_request('list', {'env_name': name})
-        return [common._fix_time_element(env, ['created', 'last_modified'])
-                for env in resp['envs_list']]
-
-    def list_bases():
-        """Returns a list of dictionaries describing available bases. The keys
-        within each returned dictionary are:
+def list_bases():
+    """Returns a list of dictionaries describing available bases. The keys
+    within each returned dictionary are:
 
     * id: id of the base (to be used when referencing bases in other functions)
     * name: brief descriptive name of the base
