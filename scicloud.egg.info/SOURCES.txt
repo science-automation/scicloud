@@ -56,6 +56,8 @@ src/transport/local.py
 src/transport/network.py
 src/transport/queue_attachment.py
 src/transport/simulator.py
+src/shortcuts/__init__.py
+src/shortcuts/ssh.py
 src/util/__init__.py
 src/util/cache.py
 src/util/common.py
