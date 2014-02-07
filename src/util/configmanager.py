@@ -269,7 +269,7 @@ class ConfigSettings(object):
             return __inner__
 
         import scicloud as cloud
-        ConfigSettings._loader(cloud.__path__[0] + os.sep ,'cloud.',do_reload)
+        ConfigSettings._loader(cloud.__path__[0] + os.sep ,'scicloud.',do_reload)
         for options in confmanager.sections.values():
             for option in options:
                 prop = property(_get_prop(option), _set_prop(option), None, confmanager.optioncomment.get(ConfigManager.getCommentStr("",option)))

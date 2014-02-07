@@ -93,7 +93,7 @@ class ImportHook(object):
             except Exception: # race condition with multiprocessing
                 pass
 
-        if fullname.startswith('cloud') and 'server' not in fullname:
+        if fullname.startswith('scicloud') and 'server' not in fullname:
             self.path = path
             parentmod, ext, submod = fullname.rpartition('.')
             if parentmod:
