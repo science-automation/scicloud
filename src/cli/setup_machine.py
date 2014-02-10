@@ -188,17 +188,18 @@ def setup_machine(email=None, password=None, api_key=None):
 
     interactive_mode = not (email and password)
 
-    if system_browser_may_be_graphical() and interactive_mode:
-        print 'To authenticate your computer, a web browser will be launched.  Please login if prompted and follow instructions on screen.\n'
-        raw_input('Press ENTER to continue')
+    # FIXME disabling browser based setup here
+    #if system_browser_may_be_graphical() and interactive_mode:
+    #    print 'To authenticate your computer, a web browser will be launched.  Please login if prompted and follow instructions on screen.\n'
+    #    raw_input('Press ENTER to continue')
 
 
-        auth_info = web_acquire_token()
-        if not auth_info:
-            print 'Reverting to email/password authentication.\n'
-        else:
-            email, password = auth_info
-            print '\n'
+    #    auth_info = web_acquire_token()
+    #    if not auth_info:
+    #        print 'Reverting to email/password authentication.\n'
+    #    else:
+    #        email, password = auth_info
+    #        print '\n'
 
     if interactive_mode:
         print 'Please enter your Science VM account login information.\nIf you do not have an account, please create one at http://www.scivm.com\n' + \
