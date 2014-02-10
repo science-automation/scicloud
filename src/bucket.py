@@ -81,7 +81,6 @@ from scicloud import _getcloudnetconnection, _getcloud
 
 cloudLog = logging.getLogger('Cloud.bucket')
 
-S3_URL = 'https://s3.amazonaws.com/'
 _bucket_new_query = 'bucket/new/'
 _bucket_list_query = 'bucket/list/'
 _bucket_get_query = 'bucket/get/'
@@ -593,7 +592,7 @@ def info(obj_path, prefix=None):
     resp = conn.send_request(_bucket_info_query, {'name': full_obj_path})
     del resp['data']
     if 'url' in resp:
-        resp['url'] = S3_URL+resp['url']
+        resp['url'] = resp['url']
 
     return resp
 
@@ -694,7 +693,7 @@ def make_public(obj_path, prefix=None, headers={}, reset_headers = False):
             raise TypeError('header values must be ASCII strings')
 
     resp = conn.send_request(_bucket_make_public_query, post_values)
-    public_url = S3_URL+resp['url']
+    public_url = resp['url']
     return public_url
 
 def public_url_folder():
@@ -704,7 +703,7 @@ def public_url_folder():
     """
     conn = _getcloudnetconnection()
     resp = conn.send_request(_bucket_public_url_folder_query, {})
-    return S3_URL+resp['url']
+    return resp['url']
 
 def is_public(obj_path, prefix=None):
     """Determine if the PiCloud bucket object ``effective_obj_path``
@@ -717,7 +716,7 @@ def is_public(obj_path, prefix=None):
     full_obj_path = _get_effective_obj_path(obj_path, prefix)
     resp = conn.send_request(_bucket_is_public_query, {'name': full_obj_path})
     if resp['status']:
-        public_url = S3_URL+resp['url']
+        public_url = resp['url']
         return public_url
     else:
         return resp['status']
